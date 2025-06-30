@@ -3,7 +3,9 @@ modal
 numpy
 openai
 packaging
-pydra_config
+pydra_config==0.0.15
+fastapi
+uvicorn
 torch==2.5.0
 tqdm
 datasets
