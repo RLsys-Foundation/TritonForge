@@ -57,7 +57,7 @@ device_lock = asyncio.Lock()  # Lock for managing device assignment
 
 app = FastAPI(
     title="KernelBench Evaluation Server",
-    description=f"A server to evaluate custom CUDA kernels with {NUM_GPUS} GPU(s) support.",
+    description=f"A server to evaluate custom CUDA and Triton kernels with {NUM_GPUS} GPU(s) support.",
 )
 
 # Global variables for timeout handling
@@ -73,6 +73,7 @@ class EvalRequest(BaseModel):
     verbose: bool = False
     measure_performance: bool = True
     preferred_device: Optional[int] = None  # Allow specifying preferred device
+    backend: str = "cuda"  # Backend to use for kernel implementation (cuda or triton)
 
 class TimeoutException(Exception):
     """Custom exception for timeout scenarios"""
@@ -218,6 +219,7 @@ def run_evaluation_with_timeout(request: EvalRequest, device: int, timeout: int 
                 verbose=request.verbose,
                 measure_performance=request.measure_performance,
                 device=device,
+                backend=request.backend,
             )
             
             # Check if timeout occurred during evaluation
@@ -318,6 +320,7 @@ def run_evaluation_with_signal_timeout(request: EvalRequest, device: int, timeou
             verbose=request.verbose,
             measure_performance=request.measure_performance,
             device=device,
+            backend=request.backend,
         )
         
         # Cancel alarm if evaluation completed successfully
@@ -373,6 +376,8 @@ async def evaluate_kernel(request: EvalRequest):
     This endpoint uses a semaphore to control concurrent access to GPU resources,
     allowing multiple evaluations to run simultaneously on different GPUs.
     Each request gets assigned a specific GPU device ID based on availability.
+    
+    Supports both CUDA and Triton backends for kernel evaluation.
     """
     if not torch.cuda.is_available():
         raise HTTPException(
@@ -390,7 +395,7 @@ async def evaluate_kernel(request: EvalRequest):
         device_id = await acquire_gpu_device(request.preferred_device)
         
         try:
-            print(f"[Server] Starting evaluation on GPU device {device_id}")
+            print(f"[Server] Starting evaluation on GPU device {device_id} with {request.backend} backend")
             
             # Run evaluation with timeout using threading approach
             # Note: We use threading approach because signal-based timeout
@@ -408,17 +413,17 @@ async def evaluate_kernel(request: EvalRequest):
             except TimeoutException:
                 raise HTTPException(
                     status_code=504,
-                    detail=f"Evaluation timed out (300 seconds) on GPU device {device_id}. The kernel may be stuck or taking too long to compile."
+                    detail=f"Evaluation timed out (300 seconds) on GPU device {device_id} with {request.backend} backend. The kernel may be stuck or taking too long to compile."
                 )
             
             # Handle None result (compilation lock error)
             if result is None:
                 raise HTTPException(
                     status_code=503, 
-                    detail=f"Compilation lock error occurred on GPU device {device_id}. Please retry."
+                    detail=f"Compilation lock error occurred on GPU device {device_id} with {request.backend} backend. Please retry."
                 )
             
-            print(f"[Server] Completed evaluation on GPU device {device_id}")
+            print(f"[Server] Completed evaluation on GPU device {device_id} with {request.backend} backend")
             return result
             
         except HTTPException:
@@ -434,13 +439,13 @@ async def evaluate_kernel(request: EvalRequest):
             cleanup_cuda_context(device_id)
             
             # Create a proper error response
-            error_message = f"An unexpected error occurred during evaluation on GPU device {device_id}: {str(e)}"
+            error_message = f"An unexpected error occurred during evaluation on GPU device {device_id} with {request.backend} backend: {str(e)}"
             
             # For CUDA architecture errors, provide more specific guidance
             if "Unknown CUDA arch" in str(e) or "GPU not supported" in str(e):
-                error_message = f"CUDA compilation error on GPU device {device_id} - unsupported GPU architecture: {str(e)}"
+                error_message = f"CUDA compilation error on GPU device {device_id} with {request.backend} backend - unsupported GPU architecture: {str(e)}"
             elif "sync_stream" in str(e) or "has no member" in str(e):
-                error_message = f"PyTorch API compatibility error on GPU device {device_id}: {str(e)}"
+                error_message = f"PyTorch API compatibility error on GPU device {device_id} with {request.backend} backend: {str(e)}"
                 
             raise HTTPException(
                 status_code=500,
@@ -460,6 +465,7 @@ async def health_check():
     return {
         "status": "healthy",
         "cuda_available": torch.cuda.is_available(),
+        "supported_backends": ["cuda", "triton"],
         "total_gpu_devices": NUM_GPUS,
         "available_gpu_devices": available_count,
         "busy_gpu_devices": busy_count,
@@ -502,6 +508,20 @@ async def manual_cleanup():
         return {"status": "cleanup completed for all devices"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Cleanup failed: {str(e)}")
+
+@app.get("/backend_info")
+async def backend_info():
+    """Get information about supported backends"""
+    return {
+        "supported_backends": ["cuda", "triton"],
+        "default_backend": "cuda",
+        "backend_descriptions": {
+            "cuda": "Custom CUDA kernels compiled with PyTorch's C++ extension system",
+            "triton": "Custom Triton kernels using OpenAI's Triton compiler"
+        },
+        "cuda_available": torch.cuda.is_available(),
+        "triton_available": True,  # Triton is available if PyTorch is available
+    }
 
 @app.post("/reset_devices")
 async def reset_devices():
