@@ -2,6 +2,12 @@
 """
 Subprocess-isolated evaluation server for KernelBench
 Each evaluation runs in a separate process to prevent CUDA context corruption
+
+Default timeout: 600 seconds (10 minutes) to account for:
+- Process spawn overhead
+- CUDA context initialization per process
+- Triton kernel compilation (no cross-process caching)
+- Complex kernel evaluation
 """
 
 import asyncio
@@ -232,12 +238,13 @@ async def evaluate_kernel(request: EvalRequest):
                 with mp.Pool(processes=1) as pool:
                     # Use apply_async to enable timeout
                     async_result = pool.apply_async(run_isolated_evaluation, (request_dict, device_id))
-                    # Wait for result with 300 second timeout (same as simple server)
-                    result_dict = async_result.get(timeout=300)
+                    # Wait for result with extended timeout for process isolation overhead
+                    # Process isolation adds: subprocess spawn + CUDA init + Triton compilation
+                    result_dict = async_result.get(timeout=600)
             except mp.TimeoutError:
                 raise HTTPException(
                     status_code=504,
-                    detail=f"Evaluation timed out (300 seconds) on GPU device {device_id} with {request.backend} backend. The kernel may be stuck or taking too long to compile."
+                    detail=f"Evaluation timed out (600 seconds) on GPU device {device_id} with {request.backend} backend. The kernel may be stuck or taking too long to compile."
                 )
             
             if result_dict["success"]:
