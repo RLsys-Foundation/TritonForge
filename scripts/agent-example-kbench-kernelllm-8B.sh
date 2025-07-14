@@ -23,7 +23,7 @@ export WANDB_KEY=${WANDB_KEY:-"0db9fd073cc9e49c8bcec2b0a6929792ecb64e4e"}
 # Model parallelism configuration
 export TP_SIZE=2
 export PP_SIZE=1
-export CP_SIZE=1
+export CP_SIZE=2
 
 # Model paths
 PROJECT_ROOT=/workspace
@@ -62,6 +62,7 @@ MODEL_ARGS=(
 CKPT_ARGS=(
    --hf-checkpoint ${HF_MODEL_PATH}
    --ref-load ${MCORE_MODEL_PATH}
+   --load ${MCORE_MODEL_PATH_SAVE}
    --save-interval 20  # Save more frequently for kernel training
    --save ${MCORE_MODEL_PATH_SAVE}
 )
@@ -74,15 +75,15 @@ ROLLOUT_ARGS=(
    --label-key label
    --num-rollout 1000  # Reduced for kernel tasks
    --rollout-batch-size 16  # Reduced for small dataset
-   --rollout-max-response-len 12288  # Larger for CUDA code
+   --rollout-max-response-len 11264  # Larger for CUDA code
    --rollout-temperature 0.8  # Higher for code diversity
    --rollout-shuffle
-   --n-samples-per-prompt 4  # Reduced to 4 responses per prompt
+   --n-samples-per-prompt 8  # Reduced to 4 responses per prompt
    --global-batch-size 64  # Reduced to match smaller dataset (16 * 4)
    --micro-batch-size 2  # Reduced for memory efficiency
    --ref-micro-batch-size 2
    --use-dynamic-batch-size
-   --max-tokens-per-gpu 13312  # Increased for longer code sequences
+   --max-tokens-per-gpu 6144  # Increased for longer code sequences
    --balance-data
 )
 
@@ -108,7 +109,7 @@ PERF_ARGS=(
 
    # --micro-batch-size 1
    --use-dynamic-batch-size
-   --max-tokens-per-gpu 13312
+   --max-tokens-per-gpu 6144
 )
 
 GRPO_ARGS=(
@@ -175,12 +176,9 @@ ray job submit --address="http://127.0.0.1:8265" \
    ${WANDB_ARGS[@]} \
    ${PERF_ARGS[@]} \
    --agent-rollout-buffer-url http://${MASTER_ADDR}:8889 \
-   --keep-old-actor \
-   --update-weights-interval 1 \
    --disable-rewards-normalization \
    --offload-old-actor \
    --offload-ref \
-   --prompt-data ${PROMPT_DATA} \
    --loss-mask-type distill_qwen \
    --sglang-log-level error \
    --input-key prompt \
