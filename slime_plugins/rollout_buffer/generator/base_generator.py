@@ -9,7 +9,7 @@ from time import sleep
 from typing import List, Optional
 
 import requests
-from generator.reward_utils.math_utils import get_rule_based_math_reward
+from .reward_utils.math_utils import get_rule_based_math_reward
 from openai import OpenAI
 from tqdm import tqdm
 

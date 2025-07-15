@@ -6,9 +6,10 @@ import time
 import warnings
 import logging
 from typing import Optional, List
+from functools import partial
 # from queue import Queue
 import requests
-from multiprocessing import Queue, Semaphore
+from multiprocessing import Queue, Semaphore, Process
 from concurrent.futures import ProcessPoolExecutor
 from openai import OpenAI
 from tenacity import retry, stop_after_attempt, wait_exponential
@@ -18,6 +19,7 @@ from slime_plugins.rollout_buffer.generator.reward_utils.kernel_utils import ext
 from slime_plugins.rollout_buffer.generator.base_generator import BaseGenerator
 
 TASK_TYPE = "kernelbench"
+DEFAULT_REMOTE_EVAL_SERVER_URL = "http://localhost:18188"
 SAMPLING_PARAMS = {
     "top_p": 1,
 }
@@ -78,7 +80,7 @@ def submit_kernel_eval_request(
                     json=payload,
                 )
                 if response.status_code == 200:
-                    exec_result = KernelExecResult.model_validate_json(response.json())
+                    exec_result = KernelExecResult.model_validate(response.json())
                     reward, response = 0.0, "Current implementation con't pass compile check"
                     if exec_result.compiled:
                         reward = 1.0 
@@ -117,12 +119,13 @@ def query_llm_with_retry(
     response = client.chat.completions.create(
         model="custom",
         messages=messages,
+        stream=False,
+        seed=random.randint(1, 10000000),
+        tools=tools,
         **sampling_params,
-        "stream": False,
-        "seed": random.randint(1, 10000000),
-        "tools": tools,
     )
-    return response.choices[0].message
+    print(f"{response.choices[0]=}")
+    return response.choices[0].message.content
 
 
 def rollout_one_trajectory(
@@ -133,27 +136,42 @@ def rollout_one_trajectory(
     eval_semaphore: Semaphore,
     backend: str = "triton",
     max_retry: int = 3,
-) -> dict:
+) -> List[dict]:
     messages = item["prompt"]
+    assistant_message = None
+    
     for _ in range(max_retry):
         try:
-            assistant_message = query_llm_with_retry(client, messages, sampling_params, tools=None)
+            assistant_message_content = query_llm_with_retry(client, messages, sampling_params, tools=None)
+            assistant_message = {
+                "role": "assistant",
+                "content": assistant_message_content,
+            }
+            break  # Success, exit retry loop
         except Exception as e:
             logger.error(f"Error querying LLM: {e}")
             continue
+
+    if assistant_message is None:
+        # All retries failed, create a default error message
+        assistant_message = {
+            "role": "assistant",
+            "content": "Error: Failed to generate response after multiple retries."
+        }
 
     messages.append(assistant_message)
     return messages
 
 
-def worker_process(task_queue, done_queue, rollout_func, reward_func, client, sampling_params):
+def worker_process(task_queue, done_queue, rollout_func, reward_func, client, sampling_params, remote_eval_server_url, eval_semaphore):
     while True:
         item = task_queue.get()
         if item == "STOP":
             break
-        messages = rollout_func(item, client, sampling_params)
+        messages = rollout_func(item, client, sampling_params, remote_eval_server_url, eval_semaphore)
         item["messages"] = messages
-        reward = reward_func(item)
+        eval_result = reward_func(eval_semaphore, remote_eval_server_url, item)
+        reward = eval_result.reward if hasattr(eval_result, 'reward') else 0.0
         item["rollout_index"] = 1
         item["reward"] = reward
         item["extra_info"] = {}
@@ -179,6 +197,7 @@ def read_data_into_queue(
     num_repeats: int, 
     num_repeat_per_sample: int,
     task_queue: Queue,
+    num_process: int,
 ):
     items = []
     actual_skipped_ids = []
@@ -186,14 +205,15 @@ def read_data_into_queue(
     with open(input_file, "r") as r:
         for line in r:
             item = json.loads(line)
-            if item["instance_id"] in skip_instance_ids:
+            if skip_instance_ids and item["instance_id"] in skip_instance_ids:
                 actual_skipped_ids.append(item["instance_id"])
                 continue
             items.append(item)
     
     random.shuffle(items) # shuffle items
     logger.info(f"Read {len(items)} items, skipped {len(actual_skipped_ids)} items")
-    if len(actual_skipped_ids) < len(skip_instance_ids):
+    
+    if skip_instance_ids and len(actual_skipped_ids) < len(skip_instance_ids):
         logger.warning(f"Warning: some instance_ids are skipped, but not all")
         not_skipped_ids = set(skip_instance_ids) ^ set(actual_skipped_ids)
         logger.warning(f"Instance_ids that should be skipped but weren't: {not_skipped_ids}")
@@ -214,8 +234,10 @@ def read_data_into_queue(
                     time.sleep(1)
                 task_queue.put(item_repeat)
                 
-    task_queue.put("STOP")
-    logger.info(f"Put STOP into task_queue")
+    # Put STOP signal for each process
+    for _ in range(num_process):
+        task_queue.put("STOP")
+    logger.info(f"Put {num_process} STOP signals into task_queue")
 
 
 class KernelGenerator(BaseGenerator):
@@ -254,6 +276,11 @@ class KernelGenerator(BaseGenerator):
         self.eval_concurrency = eval_concurrency
         self.eval_semaphore = Semaphore(eval_concurrency)
         self.task_queue, self.done_queue = Queue(maxsize=self.queue_size), Queue(maxsize=self.queue_size)
+        
+        # Initialize sampling_params with global SAMPLING_PARAMS
+        # This will be updated in run_rollout function
+        self.sampling_params = SAMPLING_PARAMS.copy()
+        self.sampling_params["max_tokens"] = max_tokens
     
     def entry(self, input_file, rollout_func, reward_func, num_epoch=1):
         for _ in range(num_epoch):
@@ -264,14 +291,10 @@ class KernelGenerator(BaseGenerator):
         self.rollout_one_epoch(input_file, rollout_func, reward_func)
     
     def rollout_one_epoch(self, input_file, rollout_func, reward_func):
-        # Start data reading in background thread
-        data_reader_thread = threading.Thread(target=self._read_data_into_queue, args=(input_file,))
-        data_reader_thread.start()
-    
         processes = []
         for _ in range(self.num_process):
             process = Process(
-                target=partial(worker_process, self.task_queue, self.done_queue, rollout_func, reward_func, self.client, self.sampling_params),
+                target=partial(worker_process, self.task_queue, self.done_queue, rollout_func, reward_func, self.client, self.sampling_params, self.remote_eval_server_url, self.eval_semaphore),
             )
             process.start()
             processes.append(process)
@@ -280,17 +303,18 @@ class KernelGenerator(BaseGenerator):
             target=read_data_into_queue,
             args=(
                 input_file, 
-                self.skip_instance_ids, 
+                set(self.skip_instance_ids) if self.skip_instance_ids else set(), 
                 self.num_repeats, 
                 self.num_repeat_per_sample, 
                 self.task_queue,
+                self.num_process,
             ),
         )
         reader_process.start()
 
         progress_bar = tqdm()
         num_finished = 0
-        while True:
+        while num_finished < self.num_process:
             item = self.done_queue.get()
             if item == "COMPLETE":
                 num_finished += 1
@@ -301,6 +325,12 @@ class KernelGenerator(BaseGenerator):
                 progress_bar.update(1)
 
         progress_bar.close()
+        
+        # Wait for all processes to complete
+        for process in processes:
+            process.join()
+        reader_process.join()
+        
         return "finished"
     
 

@@ -20,10 +20,10 @@ export PYTHONBUFFERED=16
 # Configure your WandB key if available
 export WANDB_KEY=${WANDB_KEY:-"0db9fd073cc9e49c8bcec2b0a6929792ecb64e4e"}
 
-# Model parallelism configuration
-export TP_SIZE=2
+# Model parallelism configuration - Fixed for 4 training GPUs
+export TP_SIZE=2    # Reduced from 4 to 2 (sufficient for 8B model)
 export PP_SIZE=1
-export CP_SIZE=2
+export CP_SIZE=2    # Reduced from 4 to 2 (total_model_size = 2*1*2 = 4, matches 4 GPUs)
 
 # Model paths
 PROJECT_ROOT=/workspace
@@ -41,8 +41,8 @@ MODEL_ARGS=(
    --num-attention-heads 32
    --group-query-attention
    --num-query-groups 8
-   --max-position-embeddings 131072
-   --seq-length 4096
+   # --max-position-embeddings 131072
+   # --seq-length 12288
    --use-rotary-position-embeddings
    --disable-bias-linear
    --normalization "RMSNorm"
@@ -80,10 +80,6 @@ ROLLOUT_ARGS=(
    --rollout-shuffle
    --n-samples-per-prompt 8  # Reduced to 4 responses per prompt
    --global-batch-size 64  # Reduced to match smaller dataset (16 * 4)
-   --micro-batch-size 2  # Reduced for memory efficiency
-   --ref-micro-batch-size 2
-   --use-dynamic-batch-size
-   --max-tokens-per-gpu 6144  # Increased for longer code sequences
    --balance-data
 )
 
@@ -107,9 +103,11 @@ PERF_ARGS=(
    --recompute-method uniform
    --recompute-num-layers 1
 
+   # --grad-reduce-in-bf16
    # --micro-batch-size 1
+   # --ref-micro-batch-size 1
    --use-dynamic-batch-size
-   --max-tokens-per-gpu 6144
+   --max-tokens-per-gpu 3072
 )
 
 GRPO_ARGS=(
@@ -130,6 +128,10 @@ OPTIMIZER_ARGS=(
    --weight-decay 0.1
    --adam-beta1 0.9
    --adam-beta2 0.98
+
+   --optimizer-cpu-offload
+   --overlap-cpu-optimizer-d2h-h2d
+   --use-precision-aware-optimizer
 )
 
 WANDB_ARGS=(

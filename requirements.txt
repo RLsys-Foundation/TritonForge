@@ -6,3 +6,4 @@ ray[default]
 sglang
 torch
 wandb
+tenacity
