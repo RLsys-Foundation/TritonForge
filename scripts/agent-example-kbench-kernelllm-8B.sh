@@ -74,12 +74,12 @@ ROLLOUT_ARGS=(
    --input-key prompt
    --label-key label
    --num-rollout 1000  # Reduced for kernel tasks
-   --rollout-batch-size 16  # Reduced for small dataset
+   --rollout-batch-size 2  # Reduced for small dataset
    --rollout-max-response-len 11264  # Larger for CUDA code
    --rollout-temperature 0.8  # Higher for code diversity
    --rollout-shuffle
    --n-samples-per-prompt 8  # Reduced to 4 responses per prompt
-   --global-batch-size 64  # Reduced to match smaller dataset (16 * 4)
+   --global-batch-size 16  # Reduced to match smaller dataset (16 * 4)
    --balance-data
 )
 

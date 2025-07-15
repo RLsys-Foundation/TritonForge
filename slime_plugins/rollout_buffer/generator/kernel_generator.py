@@ -20,6 +20,7 @@ from slime_plugins.rollout_buffer.generator.base_generator import BaseGenerator
 
 TASK_TYPE = "kernelbench"
 DEFAULT_REMOTE_EVAL_SERVER_URL = "http://localhost:18188"
+EVAL_CONCURRENCY = 2
 SAMPLING_PARAMS = {
     "top_p": 1,
 }
@@ -357,7 +358,7 @@ def run_rollout(data: dict):
         task_type=data["task_type"],
         skip_instance_ids=data.get("skip_instance_ids", None),
         remote_eval_server_url=data.get("remote_eval_server_url", DEFAULT_REMOTE_EVAL_SERVER_URL),
-        eval_concurrency=int(data.get("eval_concurrency", 10)),
+        eval_concurrency=int(data.get("eval_concurrency", EVAL_CONCURRENCY)),
     )
     
     generator.entry(data["input_file"], rollout_func, reward_func, int(data.get("num_epoch", 1)))
