@@ -495,6 +495,52 @@ def save_data_to_local(data):
         filename = f"{save_dir}/rollout_data_{timestamp}.json"
         with open(filename, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        # Print execution details summary
+        print(f"\n{'='*60}")
+        print(f"Rollout Data Summary ({filename}):")
+        print(f"Total entries: {len(data)}")
+        
+        # Count execution statistics
+        compiled_count = 0
+        correct_count = 0
+        speedup_data = []
+        
+        for entry in data:
+            if 'execution_details' in entry:
+                exec_details = entry['execution_details']
+                if exec_details.get('compiled', False):
+                    compiled_count += 1
+                if exec_details.get('correctness', False):
+                    correct_count += 1
+                if 'speedup' in exec_details and exec_details['speedup'] > 0:
+                    speedup_data.append(exec_details['speedup'])
+        
+        print(f"Compiled successfully: {compiled_count}/{len(data)} ({compiled_count/len(data)*100:.1f}%)")
+        print(f"Passed correctness: {correct_count}/{len(data)} ({correct_count/len(data)*100:.1f}%)")
+        
+        if speedup_data:
+            avg_speedup = sum(speedup_data) / len(speedup_data)
+            max_speedup = max(speedup_data)
+            min_speedup = min(speedup_data)
+            print(f"Speedup stats (n={len(speedup_data)}): avg={avg_speedup:.2f}x, min={min_speedup:.2f}x, max={max_speedup:.2f}x")
+        
+        # Sample a few entries to show details
+        print(f"\nSample entries with execution details:")
+        sample_count = 0
+        for i, entry in enumerate(data):
+            if 'execution_details' in entry and sample_count < 3:
+                exec_details = entry['execution_details']
+                instance_id = entry.get('instance_id', 'N/A')
+                reward = entry.get('reward', 0.0)
+                print(f"  [{i}] {instance_id}: reward={reward:.3f}, "
+                      f"compiled={exec_details.get('compiled', False)}, "
+                      f"correct={exec_details.get('correctness', False)}, "
+                      f"speedup={exec_details.get('speedup', 'N/A')}")
+                sample_count += 1
+        
+        print(f"{'='*60}\n")
+        
     except Exception as e:
         import traceback
 

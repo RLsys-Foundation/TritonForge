@@ -6,7 +6,8 @@ import time
 import warnings
 import logging
 import re
-from typing import Optional, List
+import os
+from typing import Optional, List, Dict
 from functools import partial
 # from queue import Queue
 import requests
@@ -28,7 +29,45 @@ SAMPLING_PARAMS = {
     "top_p": 1,
 }
 
+# Path to baseline timing data
+BASELINE_TIMING_PATH = "/workspace/KernelBench/results/timing/H100_atlas/baseline_time_torch_compile_inductor_default.json"
+
 logger = logging.getLogger(__name__)
+
+
+def load_baseline_timings() -> Dict[str, Dict[str, Dict]]:
+    """Load baseline timing data from JSON file.
+    
+    Returns:
+        Dict with structure: {level: {problem_name: timing_stats}}
+    """
+    if not os.path.exists(BASELINE_TIMING_PATH):
+        logger.warning(f"Baseline timing file not found at {BASELINE_TIMING_PATH}")
+        return {}
+    
+    try:
+        with open(BASELINE_TIMING_PATH, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Error loading baseline timings: {e}")
+        return {}
+
+
+def get_baseline_runtime(level: int, problem_name: str, baseline_timings: Dict) -> Optional[float]:
+    """Get baseline runtime for a specific problem.
+    
+    Args:
+        level: Problem level (1-4)
+        problem_name: Name of the problem (e.g., '1_Square_matrix_multiplication_.py')
+        baseline_timings: Loaded baseline timing data
+        
+    Returns:
+        Baseline runtime in milliseconds, or None if not found
+    """
+    level_key = f"level{level}"
+    if level_key in baseline_timings and problem_name in baseline_timings[level_key]:
+        return baseline_timings[level_key][problem_name].get("mean", None)
+    return None
 
 
 def is_valid_reward(reward: float) -> bool:
@@ -116,6 +155,7 @@ def submit_kernel_eval_request(
     item: dict, 
     backend: str = "triton",
     max_retry: int = 3,
+    baseline_timings: Optional[Dict] = None,
 ) -> KernelEvalResult:
     original_model_src = item["label"]
     messages = item["messages"]
@@ -169,6 +209,39 @@ def submit_kernel_eval_request(
                         if exec_result.correctness:
                             reward = KERNELBENCH_REWARDS["correctness"]
                             response = "Current implementation passes correctness check"
+                            
+                            # Add performance reward if runtime is available
+                            if exec_result.runtime > 0 and baseline_timings:
+                                # Extract problem info from item
+                                extra_info = item.get("extra_info", {})
+                                level = extra_info.get("level", None)
+                                problem_name = extra_info.get("problem_name", "")
+                                problem_id = extra_info.get("problem_id", None)
+                                
+                                # Construct the filename to match baseline format: "{problem_id}_{problem_name}.py"
+                                if problem_id is not None and problem_name:
+                                    baseline_key = f"{problem_id}_{problem_name}.py"
+                                elif problem_name:
+                                    baseline_key = problem_name + ".py"
+                                else:
+                                    baseline_key = None
+                                
+                                if baseline_key:
+                                    baseline_runtime = get_baseline_runtime(level, baseline_key, baseline_timings)
+                                    if baseline_runtime and baseline_runtime > 0:
+                                        # Calculate speedup: baseline_time / generated_time
+                                        speedup = baseline_runtime / exec_result.runtime
+                                        # Add performance reward based on speedup
+                                        # Speedup of 1.0 = no improvement, 2.0 = 2x faster
+                                        # Cap the performance reward at 2.0 for 3x speedup or better
+                                        performance_reward = min(max(speedup - 1.0, 0.0), 2.0)
+                                        reward += performance_reward
+                                        response += f" (Speedup: {speedup:.2f}x, Runtime: {exec_result.runtime:.3f}ms vs Baseline: {baseline_runtime:.3f}ms)"
+                                        logger.info(f"Performance reward: {performance_reward:.3f} for speedup {speedup:.2f}x")
+                                    else:
+                                        logger.warning(f"No baseline runtime found for level {level}, problem {baseline_key}")
+                                else:
+                                    logger.warning(f"Could not construct baseline key from extra_info: {extra_info}")
                         else:
                             response = "Current implementation passes compile check but fails correctness check"
                     res = KernelEvalResult(
@@ -245,18 +318,57 @@ def rollout_one_trajectory(
     return messages
 
 
-def worker_process(task_queue, done_queue, rollout_func, reward_func, client, sampling_params, remote_eval_server_url, eval_semaphore):
+def worker_process(task_queue, done_queue, rollout_func, reward_func, client, sampling_params, remote_eval_server_url, eval_semaphore, baseline_timings):
     while True:
         item = task_queue.get()
         if item == "STOP":
             break
         messages = rollout_func(item, client, sampling_params, remote_eval_server_url, eval_semaphore)
         item["messages"] = messages
-        eval_result = reward_func(eval_semaphore, remote_eval_server_url, item)
+        eval_result = reward_func(eval_semaphore, remote_eval_server_url, item, baseline_timings=baseline_timings)
         reward = eval_result.reward if hasattr(eval_result, 'reward') else 0.0
         item["rollout_index"] = 1
         item["reward"] = reward
-        item["extra_info"] = {}
+        
+        # Extract execution details from eval_result
+        execution_details = {}
+        if hasattr(eval_result, 'exec_result') and eval_result.exec_result:
+            exec_result = eval_result.exec_result
+            execution_details["compiled"] = exec_result.compiled
+            execution_details["correctness"] = exec_result.correctness
+            execution_details["runtime"] = exec_result.runtime
+            execution_details["runtime_stats"] = exec_result.runtime_stats
+            
+            # Calculate speedup if baseline is available
+            if exec_result.runtime > 0 and baseline_timings:
+                extra_info = item.get("extra_info", {})
+                level = extra_info.get("level", None)
+                problem_name = extra_info.get("problem_name", "")
+                problem_id = extra_info.get("problem_id", None)
+                
+                if problem_id is not None and problem_name:
+                    baseline_key = f"{problem_id}_{problem_name}.py"
+                elif problem_name:
+                    baseline_key = problem_name + ".py"
+                else:
+                    baseline_key = None
+                
+                if baseline_key:
+                    baseline_runtime = get_baseline_runtime(level, baseline_key, baseline_timings)
+                    if baseline_runtime and baseline_runtime > 0:
+                        speedup = baseline_runtime / exec_result.runtime
+                        execution_details["speedup"] = speedup
+                        execution_details["baseline_runtime"] = baseline_runtime
+                        execution_details["performance_reward"] = min(max(speedup - 1.0, 0.0), 2.0)
+        
+        # Also include eval status and response for debugging
+        if hasattr(eval_result, 'eval_status'):
+            execution_details["eval_status"] = eval_result.eval_status
+        if hasattr(eval_result, 'eval_response'):
+            execution_details["eval_response"] = eval_result.eval_response
+        
+        # Preserve original extra_info if it exists
+        original_extra_info = item.get("extra_info", {})
         item.update(sampling_params)
         item["timestamp"] = str(time.time())
         item["round_number"] = len([_ for _ in item["messages"] if _["role"] == "assistant"])
@@ -266,7 +378,8 @@ def worker_process(task_queue, done_queue, rollout_func, reward_func, client, sa
             "messages": messages,
             "reward": reward,
             "instance_id": item.pop("instance_id"),
-            "extra_info": item,
+            "extra_info": {**original_extra_info, **item},  # Merge original extra_info with other item data
+            "execution_details": execution_details  # Add execution details
         }
         done_queue.put(output_item)
     
@@ -363,6 +476,13 @@ class KernelGenerator(BaseGenerator):
         # This will be updated in run_rollout function
         self.sampling_params = SAMPLING_PARAMS.copy()
         self.sampling_params["max_tokens"] = max_tokens
+        
+        # Load baseline timings once at initialization
+        self.baseline_timings = load_baseline_timings()
+        if self.baseline_timings:
+            logger.info(f"Loaded baseline timings for {sum(len(v) for v in self.baseline_timings.values())} problems")
+        else:
+            logger.warning("No baseline timings loaded, performance rewards will not be calculated")
     
     def entry(self, input_file, rollout_func, reward_func, num_epoch=1):
         for _ in range(num_epoch):
@@ -376,7 +496,7 @@ class KernelGenerator(BaseGenerator):
         processes = []
         for _ in range(self.num_process):
             process = Process(
-                target=partial(worker_process, self.task_queue, self.done_queue, rollout_func, reward_func, self.client, self.sampling_params, self.remote_eval_server_url, self.eval_semaphore),
+                target=partial(worker_process, self.task_queue, self.done_queue, rollout_func, reward_func, self.client, self.sampling_params, self.remote_eval_server_url, self.eval_semaphore, self.baseline_timings),
             )
             process.start()
             processes.append(process)

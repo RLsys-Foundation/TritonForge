@@ -4,7 +4,7 @@
 KERNELBENCH_REWARDS = {
     "compilation": 0.1,  # Reward for successful compilation
     "correctness": 0.3,  # Reward for correct implementation
-    "max_reward": 0.3,   # Maximum valid reward
+    "max_reward": 2.3,   # Maximum valid reward (0.3 correctness + 2.0 max performance)
 }
 
 # Pass@k calculation thresholds
