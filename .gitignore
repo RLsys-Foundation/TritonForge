@@ -180,3 +180,8 @@ local/
 **/buffer_stats/
 *.out
 *.pkl
+
+# Claude Code generated documentation and data
+cc_doc/
+cc_data/
+cc_script/

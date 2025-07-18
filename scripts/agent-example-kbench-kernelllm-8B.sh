@@ -73,13 +73,13 @@ ROLLOUT_ARGS=(
    --prompt-data ${PROMPT_DATA}
    --input-key prompt
    --label-key label
-   --num-rollout 1000  # Reduced for kernel tasks
-   --rollout-batch-size 2  # Reduced for small dataset
+   --num-rollout 1000
+   --rollout-batch-size 8  # Increased from 2 to process more samples at once
    --rollout-max-response-len 11264  # Larger for CUDA code
    --rollout-temperature 0.8  # Higher for code diversity
    --rollout-shuffle
-   --n-samples-per-prompt 8  # Reduced to 4 responses per prompt
-   --global-batch-size 16  # Reduced to match smaller dataset (16 * 4)
+   --n-samples-per-prompt 16  # Generate 16 responses per prompt for pass@16
+   --global-batch-size 64  # Increased from 16 to process more data per batch
    --balance-data
 )
 
@@ -136,7 +136,7 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-dev-atlas-agent
+   --wandb-project slime-dev-triton-agent
    --wandb-group KernelLLM-8B-KBench-Triton-Level1
    --wandb-key ${WANDB_KEY}
 )
@@ -164,7 +164,7 @@ ray job submit --address="http://127.0.0.1:8265" \
      }
    }' \
    -- python3 train_async.py \
-   --num-epoch 100 \
+   --num-epoch 1000 \
    --actor-num-nodes 1 \
    --actor-num-gpus-per-node 4 \
    --rollout-num-gpus 2 \

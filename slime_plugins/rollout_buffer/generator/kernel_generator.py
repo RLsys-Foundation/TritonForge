@@ -5,6 +5,7 @@ import uuid
 import time
 import warnings
 import logging
+import re
 from typing import Optional, List
 from functools import partial
 # from queue import Queue
@@ -17,6 +18,8 @@ from tqdm import tqdm
 
 from slime_plugins.rollout_buffer.generator.reward_utils.kernel_utils import extract_last_code, KernelEvalResult, KernelExecResult
 from slime_plugins.rollout_buffer.generator.base_generator import BaseGenerator
+from slime_plugins.rollout_buffer.generator.kernelbench_config import KERNELBENCH_REWARDS, KERNELBENCH_VALIDATION
+from slime_plugins.rollout_buffer.generator.triton_ops import TRITON_CORE_OPS
 
 TASK_TYPE = "kernelbench"
 DEFAULT_REMOTE_EVAL_SERVER_URL = "http://localhost:18188"
@@ -35,9 +38,76 @@ def is_valid_reward(reward: float) -> bool:
         reward: The reward value to check
 
     Returns:
-        bool: True if reward is valid (between 0 and 3), False otherwise
+        bool: True if reward is valid (between 0 and max_reward), False otherwise
     """
-    return 3 >= reward >= 0
+    return KERNELBENCH_REWARDS["max_reward"] >= reward >= 0
+
+
+def validate_submission(code: str) -> bool:
+    """Pre-check if submission is valid before evaluation.
+    
+    Refined validation that allows torch._inductor utilities but ensures real Triton kernels.
+    
+    Args:
+        code: The generated code to validate
+        
+    Returns:
+        bool: True if code passes validation, False otherwise
+    """
+    if not code:
+        return False
+    
+    # Check if validation is enabled
+    if not KERNELBENCH_VALIDATION.get("require_triton_jit", True):
+        return True
+        
+    # Must have @triton.jit decorator
+    if '@triton.jit' not in code:
+        logger.warning("Submission rejected: Missing @triton.jit decorator")
+        return False
+    
+    # Extract all function definitions with @triton.jit decorator
+    triton_kernel_pattern = r'@triton\.jit\s*\n\s*def\s+(\w+)\s*\([^)]*\):[^@]*?(?=\n(?:def|class|@|$))'
+    triton_kernels = list(re.finditer(triton_kernel_pattern, code, re.DOTALL | re.MULTILINE))
+    
+    if not triton_kernels:
+        logger.warning("Submission rejected: No Triton kernel functions found")
+        return False
+    
+    # Check if we need to validate Triton operations
+    if KERNELBENCH_VALIDATION.get("require_triton_ops", True):
+        # For each Triton kernel, check it uses proper Triton operations
+        for match in triton_kernels:
+            kernel_name = match.group(1)
+            kernel_body = match.group(0)
+            
+            # Use comprehensive list of Triton operations
+            has_triton_ops = any(op in kernel_body for op in TRITON_CORE_OPS)
+            if not has_triton_ops:
+                logger.warning(f"Submission rejected: Kernel '{kernel_name}' doesn't use Triton operations")
+                return False
+            
+            # Only check for forbidden PyTorch operations if configured
+            if not KERNELBENCH_VALIDATION.get("allow_torch_in_kernel", False):
+                # Check for forbidden PyTorch operations inside kernel
+                # Note: We allow torch operations outside kernels for setup/wrapper code
+                forbidden_in_kernel = [
+                    'torch.', 'nn.', '.cuda()', '.cpu()', 
+                    'F.', 'torch.ops', 'aten.', '.backward()'
+                ]
+                
+                for pattern in forbidden_in_kernel:
+                    if pattern in kernel_body:
+                        logger.warning(f"Submission rejected: Kernel '{kernel_name}' uses forbidden operation '{pattern}'")
+                        return False
+    
+    # Additional check: Must have either a forward method or call function
+    if 'def forward(' not in code and 'def call(' not in code:
+        logger.warning("Submission rejected: No forward() or call() function found")
+        return False
+    
+    logger.info("Submission passed pre-validation: Contains valid Triton kernel(s)")
+    return True
 
 
 def submit_kernel_eval_request(
@@ -57,6 +127,16 @@ def submit_kernel_eval_request(
         return KernelEvalResult(
             eval_status="failed",
             eval_response="no custom model source found",
+            completed_at=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
+            reward=0.,
+            exec_result=KernelExecResult(),
+        )
+    
+    # Pre-validate submission before sending to evaluation
+    if not validate_submission(custom_model_src):
+        return KernelEvalResult(
+            eval_status="rejected",
+            eval_response="Submission failed validation: must contain @triton.jit kernel with Triton operations",
             completed_at=time.strftime("%Y-%m-%d %H:%M:%S", time.localtime()),
             reward=0.,
             exec_result=KernelExecResult(),
@@ -84,9 +164,10 @@ def submit_kernel_eval_request(
                     exec_result = KernelExecResult.model_validate(response.json())
                     reward, response = 0.0, "Current implementation con't pass compile check"
                     if exec_result.compiled:
-                        reward = 1.0 
+                        # Use config for rewards
+                        reward = KERNELBENCH_REWARDS["compilation"]
                         if exec_result.correctness:
-                            reward = 2.0
+                            reward = KERNELBENCH_REWARDS["correctness"]
                             response = "Current implementation passes correctness check"
                         else:
                             response = "Current implementation passes compile check but fails correctness check"

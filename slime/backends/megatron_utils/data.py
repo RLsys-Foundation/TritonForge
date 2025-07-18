@@ -491,14 +491,40 @@ def log_passrate(rollout_id, args):
 
                 return np.array([estimator(int(n), int(c), k) for n, c in zip(num_samples, num_correct)])
 
-            for k in pass_rate_name_list:
-                num_correct = np.sum(val == 1, axis=1)
-                num_samples = np.full(group_number, group_size)
-
-                pass_k_estimates = estimate_pass_at_k(num_samples, num_correct, k)
-
-                pass_k = np.mean(pass_k_estimates)
-                log_dict[f"pass@{k}"] = pass_k
+            # Make passrate calculation task-aware
+            if hasattr(args, 'rollout_task_type') and args.rollout_task_type == "kernelbench":
+                # Import config for KernelBench specific thresholds
+                try:
+                    from slime_plugins.rollout_buffer.generator.kernelbench_config import KERNELBENCH_PASSRATE_THRESHOLDS
+                    correctness_threshold = KERNELBENCH_PASSRATE_THRESHOLDS["correctness"]
+                    compilation_threshold = KERNELBENCH_PASSRATE_THRESHOLDS["compilation"]
+                except ImportError:
+                    # Fallback to default values if config not available
+                    correctness_threshold = 0.3
+                    compilation_threshold = 0.1
+                
+                # Log both metrics
+                num_correct_correctness = np.sum(val >= correctness_threshold, axis=1)
+                num_correct_compilation = np.sum(val >= compilation_threshold, axis=1)
+                
+                # Calculate both passrates
+                for metric_name, num_correct in [
+                    ("correctness", num_correct_correctness),
+                    ("compilation", num_correct_compilation)
+                ]:
+                    for k in pass_rate_name_list:
+                        num_samples = np.full(group_number, group_size)
+                        pass_k_estimates = estimate_pass_at_k(num_samples, num_correct, k)
+                        pass_k = np.mean(pass_k_estimates)
+                        log_dict[f"{metric_name}_pass@{k}"] = pass_k
+            else:
+                # Default behavior for other tasks
+                for k in pass_rate_name_list:
+                    num_correct = np.sum(val == 1, axis=1)
+                    num_samples = np.full(group_number, group_size)
+                    pass_k_estimates = estimate_pass_at_k(num_samples, num_correct, k)
+                    pass_k = np.mean(pass_k_estimates)
+                    log_dict[f"pass@{k}"] = pass_k
 
         if mpu.get_data_parallel_rank(with_context_parallel=True) == 0:
             gathered_log_dict = [None] * mpu.get_data_parallel_world_size(with_context_parallel=True)
