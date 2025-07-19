@@ -19,6 +19,8 @@ from src.utils import (
     query_server,
     read_file,
     set_gpu_arch,
+    is_amd_gpu,
+    get_amd_gpu_info,
 )
 
 """
@@ -49,6 +51,7 @@ class EvalConfig(Config):
         self.eval_mode = "local"
         # Construct this from mapping from architecture name to torch cuda arch list in the future
         # you can either specify SM version or just use the name
+        # Supports both NVIDIA (Ada, Hopper, etc.) and AMD (MI300X, gfx942, etc.)
         self.gpu_arch = ["Ada"]
 
         # Inference config
@@ -84,6 +87,15 @@ def main(config: EvalConfig):
     Keep it simple: Generate and evaluate a single sample
     """
     print(f"Starting Eval with config: {config}")
+    
+    # Check GPU type
+    if is_amd_gpu():
+        print("[INFO] AMD GPU detected, using ROCm backend")
+        gpu_info = get_amd_gpu_info()
+        if gpu_info:
+            print(f"[INFO] AMD GPU: {gpu_info[0]}")
+    else:
+        print("[INFO] NVIDIA GPU detected, using CUDA backend")
 
     # Configurations
 
@@ -148,13 +160,19 @@ def main(config: EvalConfig):
     )
 
     # Use appropriate prompt constructor based on backend
-    if config.backend == "cuda":
+    # Check if AMD GPU is present and adjust backend accordingly
+    actual_backend = config.backend
+    if is_amd_gpu() and config.backend == "cuda":
+        print("[WARNING] AMD GPU detected but backend='cuda' specified. Switching to 'triton' backend for AMD.")
+        actual_backend = "triton"
+    
+    if actual_backend == "cuda":
         custom_prompt = prompt_generate_custom_cuda_from_prompt_template(ref_arch_src)
-    elif config.backend == "triton":
+    elif actual_backend == "triton":
         custom_prompt = prompt_generate_custom_triton_from_prompt_template(ref_arch_src)
     else:
         raise ValueError(
-            f"Unsupported backend: {config.backend}. Must be 'cuda' or 'triton'."
+            f"Unsupported backend: {actual_backend}. Must be 'cuda' or 'triton'."
         )
 
     if config.log_prompt:
@@ -196,7 +214,7 @@ def main(config: EvalConfig):
         measure_performance=True,
         num_correct_trials=5,
         num_perf_trials=100,
-        backend=config.backend,
+        backend=actual_backend,  # Use the adjusted backend
     )
 
     print(

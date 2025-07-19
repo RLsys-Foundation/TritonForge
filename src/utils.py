@@ -70,16 +70,80 @@ def is_safe_to_send_to_deepseek(prompt):
     else:
         return len(tokenizer.apply_chat_template(prompt)) < TOO_LONG_FOR_DEEPSEEK
 
+def is_amd_gpu():
+    """
+    Detect if the current system has AMD GPUs (ROCm)
+    """
+    try:
+        import torch
+        if hasattr(torch.version, 'hip') and torch.version.hip is not None:
+            return True
+        # Alternative check using environment variables
+        if os.environ.get('ROCM_HOME') or os.environ.get('HIP_PLATFORM') == 'amd':
+            return True
+        # Check if rocm-smi is available
+        result = subprocess.run(['rocm-smi', '--version'], capture_output=True, text=True)
+        return result.returncode == 0
+    except:
+        return False
+
+def get_amd_gpu_info():
+    """
+    Get information about AMD GPUs on the system
+    """
+    gpu_info = []
+    try:
+        result = subprocess.run(['rocm-smi', '--showproductname'], capture_output=True, text=True)
+        if result.returncode == 0:
+            lines = result.stdout.strip().split('\n')
+            for line in lines:
+                if 'MI300' in line or 'MI250' in line or 'MI100' in line:
+                    gpu_info.append(line.strip())
+    except:
+        pass
+    return gpu_info
+
 def set_gpu_arch(arch_list: list[str]):
     """
-    Set env variable for torch cuda arch list to build kernels for specified architectures
+    Set env variable for torch cuda/hip arch list to build kernels for specified architectures
     """
-    valid_archs = ["Maxwell", "Pascal", "Volta", "Turing", "Ampere", "Hopper", "Ada"]
+    # NVIDIA architectures
+    nvidia_archs = ["Maxwell", "Pascal", "Volta", "Turing", "Ampere", "Hopper", "Ada"]
+    # AMD architectures
+    amd_archs = ["gfx906", "gfx908", "gfx90a", "gfx940", "gfx941", "gfx942", "MI300X", "MI250X", "MI100"]
+    
+    valid_archs = nvidia_archs + amd_archs
+    
     for arch in arch_list:
         if arch not in valid_archs:
             raise ValueError(f"Invalid architecture: {arch}. Must be one of {valid_archs}")
     
-    os.environ["TORCH_CUDA_ARCH_LIST"] = ";".join(arch_list)
+    # Check if we're on AMD system
+    if is_amd_gpu():
+        # Convert friendly names to gfx codes for AMD
+        amd_arch_map = {
+            "MI300X": "gfx942",
+            "MI250X": "gfx90a", 
+            "MI100": "gfx908"
+        }
+        converted_archs = []
+        for arch in arch_list:
+            if arch in amd_arch_map:
+                converted_archs.append(amd_arch_map[arch])
+            elif arch.startswith("gfx"):
+                converted_archs.append(arch)
+            else:
+                # Skip NVIDIA architectures on AMD system
+                pass
+        
+        if converted_archs:
+            os.environ["PYTORCH_ROCM_ARCH"] = ";".join(converted_archs)
+            os.environ["HIP_ARCHITECTURES"] = ";".join(converted_archs)
+    else:
+        # NVIDIA system - filter out AMD architectures
+        nvidia_only = [arch for arch in arch_list if arch in nvidia_archs]
+        if nvidia_only:
+            os.environ["TORCH_CUDA_ARCH_LIST"] = ";".join(nvidia_only)
 
 def query_server(
     prompt: str | list[dict],  # string if normal prompt, list of dicts if chat prompt,

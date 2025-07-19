@@ -21,7 +21,7 @@ from src.eval import (
     get_error_name,
     KernelExecResult,
 )
-from src.utils import read_file, set_gpu_arch
+from src.utils import read_file, set_gpu_arch, is_amd_gpu, get_amd_gpu_info
 from tqdm import tqdm
 
 """
@@ -63,6 +63,7 @@ class EvalConfig(Config):
 
         # Construct this from mapping from architecture name to torch cuda arch list in the future
         # you can either specify SM version or just use the name
+        # Supports both NVIDIA (Ada, Hopper, etc.) and AMD (MI300X, gfx942, etc.)
         self.gpu_arch = ["Ada"]
 
         # Logging
@@ -198,12 +199,22 @@ def evaluate_single_sample(
         print(
             f"[WARNING] Last level catch on {sample_id}: Some issue evaluating for kernel: {e} "
         )
-        if "CUDA error" in str(e):
+        if "CUDA error" in str(e) or "HIP error" in str(e):
             # NOTE: count this as compilation failure as it is not runnable code
+            # Handle both CUDA (NVIDIA) and HIP (AMD) errors
+            error_type = "HIP Error" if "HIP error" in str(e) else "CUDA Error"
+            
+            # Get hardware name based on GPU type
+            if is_amd_gpu():
+                gpu_info = get_amd_gpu_info()
+                hardware_name = gpu_info[0] if gpu_info else "AMD GPU"
+            else:
+                hardware_name = torch.cuda.get_device_name(device=device)
+            
             metadata = {
-                "cuda_error": f"CUDA Error: {str(e)}",
-                "cuda_error_name": get_error_name(e),
-                "hardware": torch.cuda.get_device_name(device=device),
+                "gpu_error": f"{error_type}: {str(e)}",
+                "gpu_error_name": get_error_name(e),
+                "hardware": hardware_name,
                 "device": str(device),
             }  # log this for debugging as this usually signifies illegal memory access
             eval_result = KernelExecResult(
@@ -452,9 +463,18 @@ def main(config: EvalConfig):
     """
     print(f"Starting Batch Eval with config: {config}")
 
-    # Check if CUDA is available
+    # Check if GPU is available (CUDA or ROCm)
     if not torch.cuda.is_available():
-        raise RuntimeError("CUDA device not available. Evaluation requires GPU.")
+        raise RuntimeError("GPU device not available. Evaluation requires either CUDA (NVIDIA) or ROCm (AMD) GPU.")
+    
+    # Log GPU type for debugging
+    if is_amd_gpu():
+        print("[INFO] AMD GPU detected, using ROCm backend")
+        gpu_info = get_amd_gpu_info()
+        if gpu_info:
+            print(f"[INFO] AMD GPU: {gpu_info[0]}")
+    else:
+        print("[INFO] NVIDIA GPU detected, using CUDA backend")
 
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method("spawn")

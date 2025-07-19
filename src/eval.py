@@ -19,6 +19,8 @@ import torch.nn as nn
 from pydantic import BaseModel
 
 from . import utils
+from .utils import is_amd_gpu, get_amd_gpu_info
+from . import amd_profiling
 
 REPO_TOP_PATH = os.path.abspath(
     os.path.join(
@@ -364,7 +366,16 @@ def eval_kernel_against_ref(
     backend: str, either 'cuda' or 'triton', determines which backend implementation to use
     """
     # TODO: check device is busy
-    assert torch.cuda.is_available(), "CUDA is not available, cannot run Eval"
+    # Check for GPU availability (CUDA or ROCm)
+    has_gpu = torch.cuda.is_available()
+    is_amd = is_amd_gpu()
+    
+    if not has_gpu:
+        raise RuntimeError("No GPU available. Evaluation requires either CUDA (NVIDIA) or ROCm (AMD) GPU.")
+    
+    if is_amd and backend == "cuda":
+        print("[WARNING] AMD GPU detected but backend='cuda' specified. Switching to 'triton' backend for AMD.")
+        backend = "triton"
     torch.set_printoptions(
         precision=4,  # Decimal places
         threshold=10,  # Total number of elements before truncating
@@ -372,11 +383,20 @@ def eval_kernel_against_ref(
         linewidth=80,  # Maximum width before wrapping
     )
 
-    # set CUDA device
+    # set GPU device
     torch.cuda.set_device(device)
     is_triton = backend == "triton"
     metadata = {}  # for storing result metadata
-    metadata["hardware"] = torch.cuda.get_device_name(device=device)
+    
+    # Get hardware name based on GPU type
+    if is_amd:
+        gpu_info = get_amd_gpu_info()
+        metadata["hardware"] = gpu_info[0] if gpu_info else "AMD GPU"
+        metadata["gpu_type"] = "AMD"
+    else:
+        metadata["hardware"] = torch.cuda.get_device_name(device=device)
+        metadata["gpu_type"] = "NVIDIA"
+    
     metadata["device"] = str(device)  # for debugging
 
     if is_triton:
@@ -386,13 +406,19 @@ def eval_kernel_against_ref(
         elif isinstance(device, torch.device):
             assert (
                 device.type == "cuda"
-            ), "CUDA is not availible on device, cannot run Eval"
+            ), "GPU is not available on device, cannot run Eval"
             device_num = device.index
         else:
             raise ValueError(
                 f"device must be an int or torch.device, got {type(device)}"
             )
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_num)
+        
+        # Set appropriate device visibility based on GPU type
+        if is_amd:
+            os.environ["HIP_VISIBLE_DEVICES"] = str(device_num)
+            os.environ["CUDA_VISIBLE_DEVICES"] = str(device_num)  # Some libraries check this too
+        else:
+            os.environ["CUDA_VISIBLE_DEVICES"] = str(device_num)
     context = {}
 
     if verbose:
@@ -404,6 +430,7 @@ def eval_kernel_against_ref(
     )
     set_seed(seed_num)  # set seed for reproducible input
     init_inputs = get_init_inputs()
+    # Move tensors to GPU (works for both CUDA and ROCm)
     init_inputs = [
         x.cuda(device=device) if isinstance(x, torch.Tensor) else x for x in init_inputs
     ]
@@ -417,9 +444,8 @@ def eval_kernel_against_ref(
     if verbose:
         print("[Eval] Loading and Compiling New Model with Custom CUDA Kernel")
 
-    metadata = {}  # for storing result metadata
-    metadata["hardware"] = torch.cuda.get_device_name(device=device)
-    metadata["device"] = str(device)  # for debugging
+    # Reuse metadata from above instead of resetting
+    # metadata already contains hardware and device info
 
     # this is where compilation happens
     try:
@@ -595,8 +621,15 @@ def time_execution_with_cuda_event(
         kernel_fn(*args)
         torch.cuda.synchronize(device=device)
 
+    # Get device name based on GPU type
+    if is_amd_gpu():
+        gpu_info = get_amd_gpu_info()
+        device_name = gpu_info[0] if gpu_info else "AMD GPU"
+    else:
+        device_name = torch.cuda.get_device_name(device)
+    
     print(
-        f"[Profiling] Using device: {device} {torch.cuda.get_device_name(device)}, warm up {num_warmup}, trials {num_trials}"
+        f"[Profiling] Using device: {device} {device_name}, warm up {num_warmup}, trials {num_trials}"
     )
     elapsed_times = []
 
@@ -835,7 +868,14 @@ def get_timing_stats(elapsed_times: list[float], device: torch.device = None) ->
     }
 
     if device:
-        stats["hardware"] = torch.cuda.get_device_name(device=device)
+        # Get hardware name based on GPU type
+        if is_amd_gpu():
+            gpu_info = get_amd_gpu_info()
+            stats["hardware"] = gpu_info[0] if gpu_info else "AMD GPU"
+            stats["gpu_type"] = "AMD"
+        else:
+            stats["hardware"] = torch.cuda.get_device_name(device=device)
+            stats["gpu_type"] = "NVIDIA"
         stats["device"] = str(device)  # for debugging
 
     return stats
