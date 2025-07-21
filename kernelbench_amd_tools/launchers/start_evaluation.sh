@@ -19,6 +19,13 @@ export PYTHONPATH=/workspace/KernelBench:$PYTHONPATH
 export PYTORCH_HIP_ALLOC_CONF=expandable_segments:True
 export HSA_ENABLE_SDMA=0
 
+# Disable GPU core dumps to prevent large files
+ulimit -c 0
+export HSA_ENABLE_COREDUMP=0
+export AMD_LOG_LEVEL=0
+export ROCM_DISABLE_CRASH_DUMP=1
+export HIP_ENABLE_COREDUMP=0
+
 # Change to KernelBench directory
 cd /workspace/KernelBench
 

@@ -22,6 +22,12 @@ os.environ['LD_LIBRARY_PATH'] = f"{os.environ.get('ROCM_HOME', '/opt/rocm')}/lib
 os.environ['SGLANG_API_KEY'] = 'local-key'
 os.environ['PYTHONPATH'] = f"/workspace/KernelBench:{os.environ.get('PYTHONPATH', '')}"
 
+# Disable GPU core dumps to prevent large files
+os.environ['HSA_ENABLE_COREDUMP'] = '0'
+os.environ['AMD_LOG_LEVEL'] = '0'
+os.environ['ROCM_DISABLE_CRASH_DUMP'] = '1'
+os.environ['HIP_ENABLE_COREDUMP'] = '0'
+
 # Import KernelBench modules
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
