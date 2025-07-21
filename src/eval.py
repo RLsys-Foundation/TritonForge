@@ -413,11 +413,11 @@ def eval_kernel_against_ref(
                 f"device must be an int or torch.device, got {type(device)}"
             )
         
-        # Set appropriate device visibility based on GPU type
-        if is_amd:
-            os.environ["HIP_VISIBLE_DEVICES"] = str(device_num)
-            os.environ["CUDA_VISIBLE_DEVICES"] = str(device_num)  # Some libraries check this too
-        else:
+        # For AMD GPUs, we don't set HIP_VISIBLE_DEVICES as it causes confusion
+        # Instead, we'll use torch.cuda.set_device() which is already called above
+        # This allows us to use GPU 1 while GPU 0 hosts the SGLang server
+        if not is_amd:
+            # Only set CUDA_VISIBLE_DEVICES for NVIDIA GPUs
             os.environ["CUDA_VISIBLE_DEVICES"] = str(device_num)
     context = {}
 

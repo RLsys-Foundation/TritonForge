@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/workspace/KernelBench/run_full_amd_evaluation.py", line 29, in <module>
+    from scripts.generate_and_eval_single_sample import EvalConfig, main as eval_single_main
+ModuleNotFoundError: No module named 'scripts.generate_and_eval_single_sample'

@@ -70,6 +70,9 @@ class EvalConfig(Config):
         self.log_eval_result = False
 
         self.backend = "cuda"
+        
+        # Evaluation device (default to GPU 0)
+        self.eval_device = 0
 
     def verbose_logging(self):
         self.log = True
@@ -207,6 +210,8 @@ def main(config: EvalConfig):
     # 3. Evaluate Kernel
     # NOTE: no need to wrap around process here as only a single sample
     # see batch eval for examples of process isolation
+    # Use GPU 0 by default (SGLang is on GPUs 2,3)
+    eval_device = getattr(config, 'eval_device', 0)
     kernel_exec_result = eval_kernel_against_ref(
         ref_arch_src,
         custom_kernel,
@@ -215,6 +220,7 @@ def main(config: EvalConfig):
         num_correct_trials=5,
         num_perf_trials=100,
         backend=actual_backend,  # Use the adjusted backend
+        device=eval_device,  # Specify device for evaluation
     )
 
     print(
