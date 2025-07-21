@@ -437,8 +437,8 @@ SERVER_PRESETS = {
     },
     "sglang": {  # this is for running locally, mostly for Llama
         "temperature": 0.8, # human eval pass@N temperature
-        "server_port": 10210,
-        "server_address": "matx2.stanford.edu",
+        "server_port": 30000,  # Changed to our local server port
+        "server_address": "localhost",  # Changed to localhost
         "max_tokens": 8192,
     },
     "anthropic": {  # for Claude 3.5 Sonnet
