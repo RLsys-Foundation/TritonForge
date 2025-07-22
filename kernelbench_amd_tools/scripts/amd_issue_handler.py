@@ -142,8 +142,8 @@ class AMDIssueHandler:
         if "OOM" in categorized and len(categorized["OOM"]) > 5:
             suggestions.append({
                 "issue": "Frequent OOM errors",
-                "fix": "export PYTORCH_HIP_ALLOC_CONF=expandable_segments:True",
-                "description": "Enable expandable memory segments and limit allocation sizes"
+                "fix": "Consider reducing batch sizes or using torch.cuda.empty_cache()",
+                "description": "Free up cached memory between evaluations"
             })
         
         # Compilation issues

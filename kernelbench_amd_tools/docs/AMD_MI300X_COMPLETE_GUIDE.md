@@ -63,7 +63,7 @@ export SGLANG_API_KEY=local-key
 export PYTHONPATH=/workspace/KernelBench:$PYTHONPATH
 
 # Optimizations
-export PYTORCH_HIP_ALLOC_CONF=expandable_segments:True
+# Note: expandable_segments is not supported on AMD HIP/ROCm platform
 export HSA_ENABLE_SDMA=0
 ```
 
