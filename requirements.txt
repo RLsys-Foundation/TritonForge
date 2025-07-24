@@ -4,6 +4,6 @@ mcp[cli]
 pylatexenc
 ray[default]
 sglang
+tenacity
 torch
 wandb
-tenacity

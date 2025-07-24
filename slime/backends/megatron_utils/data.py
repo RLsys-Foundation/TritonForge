@@ -492,25 +492,28 @@ def log_passrate(rollout_id, args):
                 return np.array([estimator(int(n), int(c), k) for n, c in zip(num_samples, num_correct)])
 
             # Make passrate calculation task-aware
-            if hasattr(args, 'rollout_task_type') and args.rollout_task_type == "kernelbench":
+            if hasattr(args, "rollout_task_type") and args.rollout_task_type == "kernelbench":
                 # Import config for KernelBench specific thresholds
                 try:
-                    from slime_plugins.rollout_buffer.generator.kernelbench_config import KERNELBENCH_PASSRATE_THRESHOLDS
+                    from slime_plugins.rollout_buffer.generator.kernelbench_config import (
+                        KERNELBENCH_PASSRATE_THRESHOLDS,
+                    )
+
                     correctness_threshold = KERNELBENCH_PASSRATE_THRESHOLDS["correctness"]
                     compilation_threshold = KERNELBENCH_PASSRATE_THRESHOLDS["compilation"]
                 except ImportError:
                     # Fallback to default values if config not available
                     correctness_threshold = 0.3
                     compilation_threshold = 0.1
-                
+
                 # Log both metrics
                 num_correct_correctness = np.sum(val >= correctness_threshold, axis=1)
                 num_correct_compilation = np.sum(val >= compilation_threshold, axis=1)
-                
+
                 # Calculate both passrates
                 for metric_name, num_correct in [
                     ("correctness", num_correct_correctness),
-                    ("compilation", num_correct_compilation)
+                    ("compilation", num_correct_compilation),
                 ]:
                     for k in pass_rate_name_list:
                         num_samples = np.full(group_number, group_size)
