@@ -51,7 +51,7 @@ async def async_rm(args, sample: Sample, **kwargs):
     elif rm_type == "f1":
         return f1_score(response, label)[0]
     elif rm_type == "kernelbench":
-        return float(sample.reward) if self.reward is not None else 0.
+        return float(sample.reward) if self.reward is not None else 0.0
     else:
         raise NotImplementedError(f"Rule-based RM for {type} is not implemented.")
 

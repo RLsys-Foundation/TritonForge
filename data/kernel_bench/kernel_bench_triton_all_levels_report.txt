@@ -1,0 +1,63 @@
+KernelBench Triton All Levels Data Distribution Report
+============================================================
+
+Total merged entries: 270
+Data file: kernel_bench_triton_all_levels.jsonl
+
+Distribution by Level:
+  Level 1: 100 entries (37.0%)
+  Level 2: 100 entries (37.0%)
+  Level 3: 50 entries (18.5%)
+  Level 4: 20 entries (7.4%)
+
+Original File Statistics:
+
+level_1:
+  Total entries: 100
+  Unique problems: 100
+
+level_2:
+  Total entries: 100
+  Unique problems: 99
+
+level_3:
+  Total entries: 50
+  Unique problems: 50
+
+level_4:
+  Total entries: 20
+  Unique problems: 20
+
+Problem Distribution:
+
+Level 1 (100 unique problems):
+  - 3D_tensor_matrix_multiplication: 1 entries
+  - 4D_tensor_matrix_multiplication: 1 entries
+  - Argmax_over_a_dimension: 1 entries
+  - Argmin_over_a_dimension: 1 entries
+  - Average_Pooling_1D: 1 entries
+  ... and 95 more problems
+
+Level 2 (99 unique problems):
+  - BMM_InstanceNorm_Sum_ResidualAdd_Multiply: 1 entries
+  - Conv2D_ReLU_BiasAdd: 1 entries
+  - Conv2d_Activation_BatchNorm: 1 entries
+  - Conv2d_Add_Scale_Sigmoid_GroupNorm: 1 entries
+  - Conv2d_AvgPool_Sigmoid_Sum: 1 entries
+  ... and 94 more problems
+
+Level 3 (50 unique problems):
+  - AlexNet: 1 entries
+  - ConvolutionalVisionTransformer: 1 entries
+  - DeepNarrowMLP: 1 entries
+  - DenseNet121: 1 entries
+  - DenseNet121DenseBlock: 1 entries
+  ... and 45 more problems
+
+Level 4 (20 unique problems):
+  - EleutherAI-gpt-neo-2p7B_bs1_seq2047: 1 entries
+  - EleutherAI-gpt-neo-2p7B_bs32_seq256: 1 entries
+  - EleutherAI-gpt-neo-2p7B_bs512_seq32: 1 entries
+  - facebook-bart-large_bs1024_seq32: 1 entries
+  - facebook-bart-large_bs1_seq1023: 1 entries
+  ... and 15 more problems
