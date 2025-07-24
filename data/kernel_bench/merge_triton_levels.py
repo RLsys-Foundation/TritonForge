@@ -19,12 +19,14 @@ def load_jsonl(filepath: str) -> List[Dict[str, Any]]:
             entries.append(json.loads(line.strip()))
     return entries
 
+
 def save_jsonl(data: List[Dict[str, Any]], filepath: str):
     """Save data to a JSONL file"""
     with open(filepath, 'w') as f:
         for entry in data:
             json.dump(entry, f, ensure_ascii=False)
             f.write('\n')
+
 
 def analyze_data(data: List[Dict[str, Any]], level: int) -> Dict[str, Any]:
     """Analyze data from a specific level"""
@@ -43,6 +45,7 @@ def analyze_data(data: List[Dict[str, Any]], level: int) -> Dict[str, Any]:
         'instance_ids': sorted(list(instance_ids)),
         'problem_names': sorted(list(problem_names))
     }
+
 
 def merge_triton_levels(shuffle: bool = True, seed: int = 42) -> List[Dict[str, Any]]:
     """Merge all Triton levels into a single dataset"""
@@ -74,6 +77,7 @@ def merge_triton_levels(shuffle: bool = True, seed: int = 42) -> List[Dict[str, 
         random.shuffle(all_data)
     
     return all_data, stats
+
 
 def verify_merged_data(merged_data: List[Dict[str, Any]]) -> bool:
     """Verify the integrity of merged data"""
@@ -126,6 +130,7 @@ def verify_merged_data(merged_data: List[Dict[str, Any]]) -> bool:
     
     return True
 
+
 def create_data_distribution_report(stats: Dict[str, Any], merged_data: List[Dict[str, Any]]):
     """Create a detailed report of the data distribution"""
     report_path = "kernel_bench_triton_all_levels_report.txt"
@@ -174,6 +179,7 @@ def create_data_distribution_report(stats: Dict[str, Any], merged_data: List[Dic
                 f.write(f"  ... and {len(problem_by_level[level]) - 5} more problems\n")
     
     print(f"\n📊 Data distribution report saved to: {report_path}")
+
 
 def main():
     parser = argparse.ArgumentParser(description='Merge KernelBench Triton levels 1-4')

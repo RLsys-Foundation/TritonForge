@@ -505,6 +505,8 @@ def save_data_to_local(data):
         compiled_count = 0
         correct_count = 0
         speedup_data = []
+        positive_speedups = []
+        negative_speedups = []
         
         for entry in data:
             if 'execution_details' in entry:
@@ -513,8 +515,13 @@ def save_data_to_local(data):
                     compiled_count += 1
                 if exec_details.get('correctness', False):
                     correct_count += 1
-                if 'speedup' in exec_details and exec_details['speedup'] > 0:
-                    speedup_data.append(exec_details['speedup'])
+                if 'speedup' in exec_details and exec_details['speedup'] is not None:
+                    speedup = exec_details['speedup']
+                    speedup_data.append(speedup)
+                    if speedup >= 1.0:
+                        positive_speedups.append(speedup)
+                    else:
+                        negative_speedups.append(speedup)
         
         print(f"Compiled successfully: {compiled_count}/{len(data)} ({compiled_count/len(data)*100:.1f}%)")
         print(f"Passed correctness: {correct_count}/{len(data)} ({correct_count/len(data)*100:.1f}%)")
@@ -523,7 +530,20 @@ def save_data_to_local(data):
             avg_speedup = sum(speedup_data) / len(speedup_data)
             max_speedup = max(speedup_data)
             min_speedup = min(speedup_data)
-            print(f"Speedup stats (n={len(speedup_data)}): avg={avg_speedup:.2f}x, min={min_speedup:.2f}x, max={max_speedup:.2f}x")
+            print(f"\nOverall speedup stats (n={len(speedup_data)}): avg={avg_speedup:.2f}x, min={min_speedup:.2f}x, max={max_speedup:.2f}x")
+            
+            # Positive speedups (>=1.0x, faster than baseline)
+            if positive_speedups:
+                avg_pos = sum(positive_speedups) / len(positive_speedups)
+                print(f"  Positive speedups (n={len(positive_speedups)}): avg={avg_pos:.2f}x, "
+                      f"min={min(positive_speedups):.2f}x, max={max(positive_speedups):.2f}x")
+            
+            # Negative speedups (<1.0x, slower than baseline)
+            if negative_speedups:
+                avg_neg = sum(negative_speedups) / len(negative_speedups)
+                print(f"  Negative speedups (n={len(negative_speedups)}): avg={avg_neg:.2f}x, "
+                      f"min={min(negative_speedups):.2f}x, max={max(negative_speedups):.2f}x")
+                print(f"  ({len(negative_speedups)}/{len(speedup_data)} = {len(negative_speedups)/len(speedup_data)*100:.1f}% kernels slower than baseline)")
         
         # Sample a few entries to show details
         print(f"\nSample entries with execution details:")
