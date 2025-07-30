@@ -15,6 +15,7 @@ repos:
       - id: detect-private-key
       - id: check-added-large-files
         args: ['--maxkb=1000']
+        exclude: ^data/
       - id: requirements-txt-fixer
 
   - repo: https://github.com/PyCQA/autoflake
