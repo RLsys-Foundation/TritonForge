@@ -29,7 +29,7 @@ export CP_SIZE=2    # Reduced from 4 to 2 (total_model_size = 2*1*2 = 4, matches
 PROJECT_ROOT=/workspace
 export HF_MODEL_PATH=/workspace/hf_models/facebook--KernelLLM
 export MCORE_MODEL_PATH=/workspace/megatron_model/KernelLLM-8B-25.02
-export PROMPT_DATA=/workspace/slime/data/kernel_bench/kernel_bench_triton_all_levels.jsonl
+export PROMPT_DATA=/workspace/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
 export MCORE_MODEL_PATH_SAVE=/workspace/megatron_model/KernelLLM-8B-25.02_save
 
 # KernelLLM-8B model architecture (Llama 3.1 based)
@@ -136,8 +136,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-dev-triton-agent
-   --wandb-group KernelLLM-8B-KBench-Triton-Level1
+   --wandb-project slime-triton-agent-level-1-2
+   --wandb-group KernelLLM-8B-KBench-Triton-Level1-2
    --wandb-key ${WANDB_KEY}
 )
 
