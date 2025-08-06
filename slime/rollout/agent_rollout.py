@@ -204,6 +204,11 @@ def start_rollout(api_base_url: str, args, metadata):
         "tokenizer_path": args.hf_checkpoint,
         "skip_instance_ids": finished_groups_instance_id_list,
     }
+
+    # Add multi-turn parameters if task type is kernelbench_multiturn
+    if "multiturn" in args.rollout_task_type:
+        payload["max_turns"] = str(getattr(args, "max_turns", 3))
+        payload["gamma"] = str(getattr(args, "gamma", 0.4))
     print("start rollout with payload: ", payload)
 
     while True:

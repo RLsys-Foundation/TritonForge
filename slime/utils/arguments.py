@@ -745,10 +745,22 @@ def get_slime_extra_args_provider(add_custom_arguments=None):
                 default="math",
             )
             parser.add_argument(
+                "--max-turns",
+                type=int,
+                default=3,
+                help="Maximum number of turns for multi-turn rollout",
+            )
+            parser.add_argument(
+                "--gamma",
+                type=float,
+                default=0.4,
+                help="Discount factor for multi-turn aggregated return",
+            )
+            parser.add_argument(
                 "--loss-mask-type",
                 type=str,
                 default="qwen",
-                choices=["qwen", "distill_qwen"],
+                choices=["qwen", "distill_qwen", "llama", "kernelllm", "llama3", "llama3.1"],
                 help="Loss mask type",
             )
             return parser

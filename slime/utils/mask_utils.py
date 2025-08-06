@@ -6,8 +6,14 @@ from transformers import AutoTokenizer
 class MultiTurnLossMaskGenerator:
     def __init__(self, tokenizer: AutoTokenizer, tokenizer_type: str = "qwen"):
         self.tokenizer = tokenizer
-        self.system_message_length, self.gen_token_length = self.get_system_message_length()
         self.tokenizer_type = tokenizer_type
+
+        # Only get system message length for tokenizers that need it
+        if tokenizer_type in ["qwen", "distill_qwen"]:
+            self.system_message_length, self.gen_token_length = self.get_system_message_length()
+        else:
+            self.system_message_length = 0
+            self.gen_token_length = 0
 
     def get_response_lengths(self, loss_masks: List[List[int]]) -> List[int]:
         return [len(mask[mask.index(1) :]) if 1 in mask else 0 for mask in loss_masks]
@@ -73,6 +79,66 @@ class MultiTurnLossMaskGenerator:
         loss_mask = [0] * len(prompt_tokens) + [1] * response_length
         return token_ids, loss_mask
 
+    def gen_multi_turn_loss_mask_llama(self, messages: List[Dict]) -> Tuple[List[int], List[int]]:
+        """Generate loss mask for Llama/KernelLLM models.
+
+        This method handles Llama3.1-based models like KernelLLM by:
+        1. Applying the chat template to get properly formatted tokens
+        2. Creating masks that only train on assistant responses
+        3. Supporting multi-turn conversations
+        """
+        all_token_ids = []
+        all_loss_masks = []
+
+        # Process all messages together to get proper formatting
+        full_text = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=False)
+        full_tokens = self.tokenizer(full_text, add_special_tokens=False)["input_ids"]
+
+        # Now we need to identify which parts are assistant responses
+        # We'll do this by tokenizing each message separately and finding them in the full sequence
+        current_pos = 0
+
+        for i, message in enumerate(messages):
+            # Get the formatted version of just this message
+            if i == 0:
+                # First message includes any system prompt
+                single_msg_text = self.tokenizer.apply_chat_template(
+                    messages[: i + 1], tokenize=False, add_generation_prompt=(message["role"] != "assistant")
+                )
+            else:
+                # For subsequent messages, get the incremental part
+                prev_text = self.tokenizer.apply_chat_template(
+                    messages[:i], tokenize=False, add_generation_prompt=True
+                )
+                curr_text = self.tokenizer.apply_chat_template(
+                    messages[: i + 1], tokenize=False, add_generation_prompt=(message["role"] != "assistant")
+                )
+                single_msg_text = curr_text[len(prev_text) :]
+
+            single_msg_tokens = self.tokenizer(single_msg_text, add_special_tokens=False)["input_ids"]
+            msg_len = len(single_msg_tokens)
+
+            # Create mask: 1 for assistant responses, 0 for everything else
+            if message["role"] == "assistant":
+                # For assistant messages, we want to train on the response
+                # But not on any special tokens or formatting
+                loss_mask = [1] * msg_len
+            else:
+                loss_mask = [0] * msg_len
+
+            all_loss_masks.extend(loss_mask)
+            current_pos += msg_len
+
+        # Ensure we have the right length
+        if len(all_loss_masks) < len(full_tokens):
+            # Pad with zeros if needed (for any trailing tokens)
+            all_loss_masks.extend([0] * (len(full_tokens) - len(all_loss_masks)))
+        elif len(all_loss_masks) > len(full_tokens):
+            # Truncate if too long
+            all_loss_masks = all_loss_masks[: len(full_tokens)]
+
+        return full_tokens, all_loss_masks
+
     def get_loss_mask(self, messages: List[Dict]) -> List[int]:
         if self.tokenizer_type == "qwen":
             if "<｜Assistant｜>" in self.tokenizer.get_added_vocab():
@@ -81,6 +147,8 @@ class MultiTurnLossMaskGenerator:
             return self.gen_multi_turn_loss_mask_qwen(messages)
         elif self.tokenizer_type == "distill_qwen":
             return self.gen_multi_turn_loss_mask_distill_qwen(messages)
+        elif self.tokenizer_type in ["llama", "kernelllm", "llama3", "llama3.1"]:
+            return self.gen_multi_turn_loss_mask_llama(messages)
         else:
             raise ValueError(f"Unsupported tokenizer type: {self.tokenizer_type}")
 

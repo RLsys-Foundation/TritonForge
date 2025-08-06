@@ -69,7 +69,7 @@ CKPT_ARGS=(
 
 ROLLOUT_ARGS=(
    --rollout-function-path slime.rollout.agent_rollout.generate_rollout
-   --rm-type kernelbench
+   --rm-type kernelbench_multiturn
    --prompt-data ${PROMPT_DATA}
    --input-key prompt
    --label-key label
@@ -81,6 +81,8 @@ ROLLOUT_ARGS=(
    --n-samples-per-prompt 16  # Generate 16 responses per prompt for pass@16
    --global-batch-size 64  # Increased from 16 to process more data per batch
    --balance-data
+   --max-turns 3  # Multi-turn dialogue horizon
+   --gamma 0.4  # Discount factor for aggregated return
 )
 
 # EVAL_ARGS=(
@@ -136,8 +138,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-triton-agent-level-1-2
-   --wandb-group KernelLLM-8B-KBench-Triton-Level1-2
+   --wandb-project slime-multiturn-kernelllm-8B
+   --wandb-group KernelLLM-8B-KBench-MultiTurn
    --wandb-key ${WANDB_KEY}
 )
 
@@ -181,8 +183,8 @@ ray job submit --address="http://127.0.0.1:8265" \
    --disable-rewards-normalization \
    --offload-old-actor \
    --offload-ref \
-   --loss-mask-type distill_qwen \
+   --loss-mask-type kernelllm \
    --sglang-log-level error \
    --input-key prompt \
    --log-passrate \
-   --rollout-task-type kernelbench
+   --rollout-task-type kernelbench_multiturn

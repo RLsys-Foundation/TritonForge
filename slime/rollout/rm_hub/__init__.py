@@ -51,9 +51,14 @@ async def async_rm(args, sample: Sample, **kwargs):
     elif rm_type == "f1":
         return f1_score(response, label)[0]
     elif rm_type == "kernelbench":
-        return float(sample.reward) if self.reward is not None else 0.0
+        return float(sample.reward) if sample.reward is not None else 0.0
+    elif rm_type == "kernelbench_multiturn":
+        # For multi-turn kernel generation, use aggregated return if available
+        if hasattr(sample, "aggregated_return") and sample.aggregated_return is not None:
+            return float(sample.aggregated_return)
+        return float(sample.reward) if sample.reward is not None else 0.0
     else:
-        raise NotImplementedError(f"Rule-based RM for {type} is not implemented.")
+        raise NotImplementedError(f"Rule-based RM for {rm_type} is not implemented.")
 
 
 async def batched_async_rm(

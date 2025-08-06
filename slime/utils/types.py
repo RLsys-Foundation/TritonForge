@@ -20,6 +20,12 @@ class Sample:
     reward: Optional[Union[float, dict[str, float]]] = None
     loss_mask: Optional[list[int]] = None
 
+    # Multi-turn support
+    turn_idx: int = 0  # Current turn index (0-based)
+    history: list[dict] = field(default_factory=list)  # Previous turns with code + eval results
+    turn_rewards: list[float] = field(default_factory=list)  # Rewards for each turn
+    aggregated_return: Optional[float] = None  # Discounted aggregated return
+
     class Status(Enum):
         PENDING = "pending"
         COMPLETED = "completed"
