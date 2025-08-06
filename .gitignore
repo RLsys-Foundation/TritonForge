@@ -185,3 +185,4 @@ local/
 cc_doc/
 cc_data/
 cc_script/
+kernel_rollout_logs/
