@@ -74,12 +74,12 @@ ROLLOUT_ARGS=(
    --input-key prompt
    --label-key label
    --num-rollout 1000
-   --rollout-batch-size 8  # Increased from 2 to process more samples at once
-   --rollout-max-response-len 11264  # Larger for CUDA code
+   --rollout-batch-size 2  # Reduced for faster debugging and lower memory usage
+   --rollout-max-response-len 11264  # Extended for multi-turn context accumulation
    --rollout-temperature 0.8  # Higher for code diversity
    --rollout-shuffle
-   --n-samples-per-prompt 16  # Generate 16 responses per prompt for pass@16
-   --global-batch-size 64  # Increased from 16 to process more data per batch
+   --n-samples-per-prompt 4  # Generate 4 responses per prompt for pass@4
+   --global-batch-size 8  # Reduced from 64 to 8 for faster training iterations
    --balance-data
    --max-turns 3  # Multi-turn dialogue horizon
    --gamma 0.4  # Discount factor for aggregated return
