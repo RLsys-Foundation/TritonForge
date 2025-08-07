@@ -1,6 +1,9 @@
 import copy
+import json
 import logging
+import os
 import time
+from datetime import datetime
 from functools import partial
 from multiprocessing import Process, Queue, Semaphore
 from typing import Dict, List, Optional, Tuple
@@ -29,6 +32,102 @@ TASK_TYPE = "kernelbench_multiturn"
 # Multi-turn configuration
 DEFAULT_MAX_TURNS = 3  # Maximum number of turns
 DEFAULT_GAMMA = 0.4  # Discount factor for aggregated return
+
+# Logging configuration
+ENABLE_DETAILED_LOGGING = True  # Enable detailed multi-turn logging
+LOG_DIR = "/workspace/slime/multi_turn_logs"  # Directory for detailed logs
+
+
+def save_multi_turn_data_to_local(data: dict, turn_idx: int = None, is_final: bool = False):
+    """Save multi-turn training data to local files for analysis.
+
+    Args:
+        data: Data to save (can be turn data or final trajectory data)
+        turn_idx: Turn index if saving turn-specific data
+        is_final: Whether this is the final trajectory data
+    """
+    if not ENABLE_DETAILED_LOGGING:
+        return
+
+    try:
+        # Create log directory if it doesn't exist
+        os.makedirs(LOG_DIR, exist_ok=True)
+
+        # Generate timestamp-based filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
+        instance_id = data.get("instance_id", "unknown")
+
+        if is_final:
+            # Save final trajectory data
+            filename = f"{LOG_DIR}/trajectory_{instance_id}_{timestamp}.json"
+            log_data = {
+                "timestamp": timestamp,
+                "instance_id": instance_id,
+                "final_reward": data.get("reward", 0),
+                "num_turns": data.get("num_turns", 0),
+                "turn_rewards": data.get("turn_rewards", []),
+                "aggregated_return": data.get("aggregated_return", 0),
+                "history": data.get("history", []),
+                "messages": data.get("messages", []),
+                "execution_details": data.get("execution_details", {}),
+                "extra_info": data.get("extra_info", {}),
+            }
+
+            # Log summary to console
+            logger.info(f"=== Final Trajectory Summary for {instance_id} ===")
+            logger.info(f"Total turns: {log_data['num_turns']}")
+            logger.info(f"Turn rewards: {log_data['turn_rewards']}")
+            logger.info(f"Aggregated return: {log_data['aggregated_return']:.4f}")
+            logger.info(f"Final correctness: {log_data['execution_details'].get('final_correctness', False)}")
+            logger.info(f"Final speedup: {log_data['execution_details'].get('final_speedup', 0):.2f}x")
+
+        else:
+            # Save turn-specific data
+            filename = f"{LOG_DIR}/turn_{instance_id}_t{turn_idx}_{timestamp}.json"
+            log_data = {"timestamp": timestamp, "instance_id": instance_id, "turn_idx": turn_idx, "turn_data": data}
+
+            # Log turn summary to console
+            logger.info(f"=== Turn {turn_idx} for {instance_id} ===")
+            if "eval_result" in data:
+                eval_result = data["eval_result"]
+                logger.info(f"Compiled: {eval_result.get('compiled', False)}")
+                logger.info(f"Correctness: {eval_result.get('correctness', False)}")
+                logger.info(f"Runtime: {eval_result.get('runtime', 0):.3f}ms")
+                logger.info(f"Speedup: {eval_result.get('speedup', 0):.2f}x")
+                logger.info(f"Reward: {data.get('reward', 0):.4f}")
+                if eval_result.get("error_message"):
+                    logger.info(f"Error: {eval_result['error_message'][:100]}...")
+
+        # Write to file
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(log_data, f, ensure_ascii=False, indent=2, default=str)
+
+        logger.debug(f"Saved multi-turn data to {filename}")
+
+    except Exception as e:
+        logger.error(f"Error saving multi-turn data: {e}")
+
+
+def log_turn_summary(turn_idx: int, instance_id: str, turn_data: dict):
+    """Print a concise summary of a turn's results."""
+    eval_result = turn_data.get("eval_result", {})
+    reward = turn_data.get("reward", 0)
+
+    status_symbols = {True: "✓", False: "✗"}
+
+    compiled = eval_result.get("compiled", False)
+    correct = eval_result.get("correctness", False)
+    runtime = eval_result.get("runtime", 0)
+    speedup = eval_result.get("speedup", 0)
+
+    logger.info(
+        f"[Turn {turn_idx + 1}] {instance_id}: "
+        f"Compile:{status_symbols[compiled]} "
+        f"Correct:{status_symbols[correct]} "
+        f"Runtime:{runtime:.2f}ms "
+        f"Speedup:{speedup:.2f}x "
+        f"Reward:{reward:.3f}"
+    )
 
 
 def construct_multi_turn_prompt(
@@ -237,6 +336,22 @@ def rollout_multi_turn_trajectory(
 
         history.append(history_entry)
 
+        # Log turn details
+        log_turn_summary(turn_idx, item.get("instance_id", "unknown"), history_entry)
+
+        # Save turn data to local file
+        turn_log_data = {
+            "instance_id": item.get("instance_id", "unknown"),
+            "turn_idx": turn_idx,
+            "prompt": prompt,
+            "response": assistant_content,
+            "kernel_code": kernel_code,
+            "eval_result": history_entry["eval_result"],
+            "reward": turn_reward,
+            "extra_info": item.get("extra_info", {}),
+        }
+        save_multi_turn_data_to_local(turn_log_data, turn_idx=turn_idx, is_final=False)
+
         # Early termination conditions
         if turn_reward >= KERNELBENCH_REWARDS["correctness"] + 1.0:
             # Got correctness + good performance, no need to continue
@@ -320,7 +435,7 @@ def worker_process_multi_turn(
             "uid": item.pop("uid"),
             "messages": messages,
             "reward": aggregated_return,
-            "instance_id": item.pop("instance_id"),
+            "instance_id": item.get("instance_id", "unknown"),
             "extra_info": {**original_extra_info, **item},
             "execution_details": execution_details,
             "multi_turn_data": {
@@ -331,6 +446,24 @@ def worker_process_multi_turn(
                 "max_turns": max_turns,
             },
         }
+
+        # Save final trajectory data
+        final_log_data = {
+            "instance_id": output_item["instance_id"],
+            "reward": aggregated_return,
+            "num_turns": len(turn_rewards),
+            "turn_rewards": turn_rewards,
+            "aggregated_return": aggregated_return,
+            "history": history,
+            "messages": messages,
+            "execution_details": execution_details,
+            "extra_info": original_extra_info,
+        }
+        save_multi_turn_data_to_local(final_log_data, is_final=True)
+
+        # Also preserve instance_id for output
+        output_item["instance_id"] = final_log_data["instance_id"]
+
         done_queue.put(output_item)
 
     done_queue.put("COMPLETE")

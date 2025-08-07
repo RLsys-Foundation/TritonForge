@@ -186,3 +186,4 @@ cc_doc/
 cc_data/
 cc_script/
 kernel_rollout_logs/
+multi_turn_logs/
