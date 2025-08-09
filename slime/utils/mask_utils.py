@@ -68,7 +68,19 @@ class MultiTurnLossMaskGenerator:
 
         return all_token_ids, all_loss_masks
 
-    def gen_multi_turn_loss_mask_distill_qwen(self, messages: List[Dict]) -> Tuple[List[int], List[int]]:
+    def gen_multi_turn_loss_mask_distill_qwen(self, messages: List[Dict]) -> Tuple[List[int], List[int]]: # this is not doing what it says it does
+        prompt = self.tokenizer.apply_chat_template(messages[:1], tokenize=False, add_generation_prompt=True)
+        response = messages[-1]["content"]
+        prompt_tokens = self.tokenizer(prompt, add_special_tokens=False)["input_ids"]
+        response_tokens = self.tokenizer(response, add_special_tokens=False)["input_ids"]
+
+        response_length = len(response_tokens)
+        token_ids = prompt_tokens + response_tokens
+        loss_mask = [0] * len(prompt_tokens) + [1] * response_length
+        return token_ids, loss_mask
+    
+    def mask_out_all_but_last_assistant_response(self, messages: List[Dict]) -> Tuple[List[int], List[int]]:
+        assert messages[-1]["role"] == "assistant", "Last message must be an assistant response"
         prompt = self.tokenizer.apply_chat_template(messages[:1], tokenize=False, add_generation_prompt=True)
         response = messages[-1]["content"]
         prompt_tokens = self.tokenizer(prompt, add_special_tokens=False)["input_ids"]
