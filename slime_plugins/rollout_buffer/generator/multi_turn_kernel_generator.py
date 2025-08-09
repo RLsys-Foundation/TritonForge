@@ -239,6 +239,7 @@ def rollout_multi_turn_trajectory(
     max_turns: int = DEFAULT_MAX_TURNS,
     gamma: float = DEFAULT_GAMMA,
     baseline_timings: Optional[Dict] = None,
+    use_native_template: bool = True,
 ) -> Tuple[List[dict], float, List[float], List[dict]]:
     """Execute multi-turn rollout for kernel generation.
 
@@ -260,30 +261,10 @@ def rollout_multi_turn_trajectory(
     history = []
     turn_rewards = []
     messages = None
-
-    for turn_idx in range(max_turns):
-        # Construct prompt with history
-        prompt = construct_multi_turn_prompt(original_prompt, turn_idx, history)
-
-        # Generate response
-        try:
-            assistant_content = query_llm_with_retry(client, prompt, sampling_params, tools=None)
-            assistant_message = {
-                "role": "assistant",
-                "content": assistant_content,
-            }
-        except Exception as e:
-            logger.error(f"Error in turn {turn_idx}: {e}")
-            assistant_message = {
-                "role": "assistant",
-                "content": f"Error: Failed to generate response in turn {turn_idx}",
-            }
-
-        # Build messages for evaluation
-        messages = prompt + [assistant_message]
-
+    
+    def eval_content(content: str) -> dict:
         # Extract kernel code
-        kernel_code = extract_last_code(assistant_content)
+        kernel_code = extract_last_code(content)
 
         # Evaluate the generated kernel
         eval_item = copy.deepcopy(item)
@@ -295,6 +276,56 @@ def rollout_multi_turn_trajectory(
             backend=backend,
             baseline_timings=baseline_timings,
         )
+        return kernel_code, eval_result
+        
+    
+    messages = [
+        {
+            "role": "system",
+            "content": "You are a helpful assistant that generates kernel code.",
+        },
+        original_prompt
+    ]
+    for turn_idx in range(max_turns):
+        if use_native_template:
+            # Generate response
+            try:
+                assistant_content = query_llm_with_retry(client, messages, sampling_params, tools=None)
+                assistant_message = {
+                    "role": "assistant",
+                    "content": assistant_content,
+                }
+            except Exception as e:
+                logger.error(f"Error in turn {turn_idx}: {e}")
+                assistant_message = {
+                    "role": "assistant",
+                    "content": f"Error: Failed to generate response in turn {turn_idx}",
+                }
+
+            messages.append(assistant_message)
+        else:
+            # Construct prompt with history
+            prompt = construct_multi_turn_prompt(original_prompt, turn_idx, history)
+            
+            # Generate response
+            try:
+                assistant_content = query_llm_with_retry(client, prompt, sampling_params, tools=None)
+                assistant_message = {
+                    "role": "assistant",
+                    "content": assistant_content,
+                }
+            except Exception as e:
+                logger.error(f"Error in turn {turn_idx}: {e}")
+                assistant_content = f"Error: Failed to generate response in turn {turn_idx}"
+                assistant_message = {
+                    "role": "assistant",
+                    "content": assistant_content,
+                }
+
+            # Build messages for evaluation
+            messages = prompt + [assistant_message] # in this case we don't accumulate messages
+            
+        kernel_code, eval_result = eval_content(assistant_content)
 
         # Extract reward and evaluation details
         turn_reward = eval_result.reward if hasattr(eval_result, "reward") else 0.0
@@ -363,7 +394,6 @@ def rollout_multi_turn_trajectory(
             logger.info(f"Early termination at turn {turn_idx}: multiple failures")
             break
 
-    # Calculate aggregated return
     aggregated_return = calculate_aggregated_return(turn_rewards, gamma)
 
     return messages, aggregated_return, turn_rewards, history
