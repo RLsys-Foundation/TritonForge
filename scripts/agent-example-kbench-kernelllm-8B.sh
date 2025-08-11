@@ -26,7 +26,7 @@ export PP_SIZE=1
 export CP_SIZE=2    # Reduced from 4 to 2 (total_model_size = 2*1*2 = 4, matches 4 GPUs)
 
 # Model paths
-PROJECT_ROOT=/workspace
+PROJECT_ROOT=/root
 export HF_MODEL_PATH=/workspace/hf_models/facebook--KernelLLM
 export MCORE_MODEL_PATH=/workspace/megatron_model/KernelLLM-8B-25.02
 export PROMPT_DATA=/workspace/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
