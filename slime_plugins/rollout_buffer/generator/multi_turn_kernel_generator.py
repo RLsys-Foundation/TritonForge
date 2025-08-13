@@ -279,16 +279,20 @@ def rollout_multi_turn_trajectory(
         return kernel_code, eval_result
         
     
-    messages = [
+    # original_prompt is already a list of messages, so we use it directly
+    # For Qwen3 models, the prompt already contains the proper system message
+    messages = copy.deepcopy(original_prompt) if isinstance(original_prompt, list) else [
         {
             "role": "system",
             "content": "You are a helpful assistant that generates kernel code.",
         },
         original_prompt
     ]
+    
     for turn_idx in range(max_turns):
         if use_native_template:
             # Generate response
+            assistant_content = None  # Initialize to avoid UnboundLocalError
             try:
                 assistant_content = query_llm_with_retry(client, messages, sampling_params, tools=None)
                 assistant_message = {
@@ -297,9 +301,10 @@ def rollout_multi_turn_trajectory(
                 }
             except Exception as e:
                 logger.error(f"Error in turn {turn_idx}: {e}")
+                assistant_content = f"Error: Failed to generate response in turn {turn_idx}"
                 assistant_message = {
                     "role": "assistant",
-                    "content": f"Error: Failed to generate response in turn {turn_idx}",
+                    "content": assistant_content,
                 }
 
             messages.append(assistant_message)
@@ -308,6 +313,7 @@ def rollout_multi_turn_trajectory(
             prompt = construct_multi_turn_prompt(original_prompt, turn_idx, history)
             
             # Generate response
+            assistant_content = None  # Initialize to avoid UnboundLocalError
             try:
                 assistant_content = query_llm_with_retry(client, prompt, sampling_params, tools=None)
                 assistant_message = {
@@ -371,10 +377,12 @@ def rollout_multi_turn_trajectory(
         log_turn_summary(turn_idx, item.get("instance_id", "unknown"), history_entry)
 
         # Save turn data to local file
+        # Use the appropriate prompt based on template type
+        prompt_for_logging = messages if use_native_template else prompt
         turn_log_data = {
             "instance_id": item.get("instance_id", "unknown"),
             "turn_idx": turn_idx,
-            "prompt": prompt,
+            "prompt": prompt_for_logging,
             "response": assistant_content,
             "kernel_code": kernel_code,
             "eval_result": history_entry["eval_result"],
