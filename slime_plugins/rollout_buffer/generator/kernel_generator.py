@@ -112,9 +112,15 @@ def validate_submission(code: str) -> bool:
         return False
 
     # Extract all function definitions with @triton.jit decorator
-    triton_kernel_pattern = r"@triton\.jit\s*\n\s*def\s+(\w+)\s*\([^)]*\):[^@]*?(?=\n(?:def|class|@|$))"
-    triton_kernels = list(re.finditer(triton_kernel_pattern, code, re.DOTALL | re.MULTILINE))
-
+    # Simplified pattern that's more robust
+    triton_kernel_pattern = r"@triton\.jit\s*\n\s*def\s+(\w+)\s*\([^)]*\):"
+    triton_kernels = list(re.finditer(triton_kernel_pattern, code, re.MULTILINE))
+    
+    if not triton_kernels:
+        # Try a more lenient pattern (handles different formatting)
+        triton_kernel_pattern = r"@triton\.jit.*?def\s+(\w+)"
+        triton_kernels = list(re.finditer(triton_kernel_pattern, code, re.DOTALL))
+    
     if not triton_kernels:
         logger.warning("Submission rejected: No Triton kernel functions found")
         return False
@@ -124,7 +130,20 @@ def validate_submission(code: str) -> bool:
         # For each Triton kernel, check it uses proper Triton operations
         for match in triton_kernels:
             kernel_name = match.group(1)
-            kernel_body = match.group(0)
+            # Find the full kernel body by looking from the match position to the next function/class
+            match_start = match.start()
+            match_end = match.end()
+            
+            # Find the end of the kernel function (next def, class, or end of file)
+            next_def = code.find('\ndef ', match_end)
+            next_class = code.find('\nclass ', match_end)
+            next_decorator = code.find('\n@', match_end)
+            
+            # Find the minimum valid position
+            ends = [pos for pos in [next_def, next_class, next_decorator] if pos > 0]
+            kernel_end = min(ends) if ends else len(code)
+            
+            kernel_body = code[match_start:kernel_end]
 
             # Use comprehensive list of Triton operations
             has_triton_ops = any(op in kernel_body for op in TRITON_CORE_OPS)

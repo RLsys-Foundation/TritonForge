@@ -85,6 +85,22 @@ def extract_last_code(output_string: str, code_language_types: Optional[List[str
 
         return code if code else None
 
+    # If no code blocks found, check if the entire output looks like Python code
+    # This handles cases where the model outputs code directly without markdown blocks
+    if "import " in trimmed or "def " in trimmed or "@triton.jit" in trimmed:
+        # Check if it starts with import or contains typical Python code patterns
+        lines = trimmed.split('\n')
+        # Look for the start of actual code (skip any non-code preamble)
+        code_start = 0
+        for i, line in enumerate(lines):
+            if line.strip().startswith('import ') or line.strip().startswith('from ') or '@triton.jit' in line:
+                code_start = i
+                break
+        
+        # Return everything from the first import/decorator to the end
+        if code_start < len(lines):
+            return '\n'.join(lines[code_start:])
+    
     return None
 
 

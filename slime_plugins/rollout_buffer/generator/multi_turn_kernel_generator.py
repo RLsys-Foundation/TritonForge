@@ -397,10 +397,11 @@ def rollout_multi_turn_trajectory(
             logger.info(f"Early termination at turn {turn_idx}: achieved good performance")
             break
 
-        if turn_idx > 0 and all(r == 0 for r in turn_rewards):
-            # Multiple failures, unlikely to improve
-            logger.info(f"Early termination at turn {turn_idx}: multiple failures")
-            break
+        # Removed early termination for multiple failures - let it try all turns
+        # if turn_idx > 0 and all(r == 0 for r in turn_rewards):
+        #     # Multiple failures, unlikely to improve
+        #     logger.info(f"Early termination at turn {turn_idx}: multiple failures")
+        #     break
 
     aggregated_return = calculate_aggregated_return(turn_rewards, gamma)
 
