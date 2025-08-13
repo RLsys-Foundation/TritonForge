@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from pydantic import BaseModel, Field
 
@@ -42,19 +42,72 @@ class KernelEvalResult(BaseModel):
     exec_result: KernelExecResult = Field(default_factory=KernelExecResult)
 
 
-def extract_last_code(output_string: str, code_language_types: Optional[List[str]] = None) -> Optional[str]:
+def strip_thinking_tags(content: str, preserve_tags: bool = False) -> Tuple[str, str]:
+    """
+    Strip <think>...</think> tags from content while preserving the cleaned version.
+    
+    Args:
+        content: The model output that may contain thinking tags
+        preserve_tags: If True, returns both original and cleaned; if False, only cleaned
+        
+    Returns:
+        Tuple of (cleaned_content, thinking_content)
+        - cleaned_content: Content with think tags removed
+        - thinking_content: Just the content that was inside think tags
+    
+    Examples:
+        >>> strip_thinking_tags("<think>Planning...</think>Here's the code")
+        ("Here's the code", "Planning...")
+        
+        >>> strip_thinking_tags("No thinking here")
+        ("No thinking here", "")
+    """
+    if not content:
+        return content, ""
+    
+    thinking_parts = []
+    cleaned_parts = []
+    
+    # Pattern to match <think>...</think> blocks (including nested/multiline)
+    # Using non-greedy matching to avoid consuming too much
+    think_pattern = r'<think>(.*?)</think>'
+    
+    last_end = 0
+    for match in re.finditer(think_pattern, content, re.DOTALL):
+        # Add the part before the think tag to cleaned_parts
+        cleaned_parts.append(content[last_end:match.start()])
+        # Save the thinking content
+        thinking_parts.append(match.group(1))
+        last_end = match.end()
+    
+    # Add any remaining content after the last think tag
+    cleaned_parts.append(content[last_end:])
+    
+    cleaned_content = ''.join(cleaned_parts).strip()
+    thinking_content = '\n'.join(thinking_parts).strip()
+    
+    return cleaned_content, thinking_content
+
+
+def extract_last_code(output_string: str, code_language_types: Optional[List[str]] = None, strip_think_tags: bool = True) -> Optional[str]:
     """
     Extract the last code block from model output, specified by code_language_type
+    
+    Now handles <think> tags intelligently - strips them before extraction by default.
 
     Args:
         output_string: The output string from the model
         code_language_types: List of language types to look for (e.g., ["python", "cpp"])
+        strip_think_tags: Whether to strip <think> tags before extraction (default True)
 
     Returns:
         The extracted code string, or None if no code block found
 
     Examples:
         >>> extract_last_code("Here is code: ```python\nprint('hello')\n```")
+        "print('hello')"
+        
+        >>> extract_last_code("<think>Let me think...</think>```python\nprint('hello')\n```")
         "print('hello')"
 
         >>> extract_last_code("No code here")
@@ -66,6 +119,10 @@ def extract_last_code(output_string: str, code_language_types: Optional[List[str
     if not output_string or not output_string.strip():
         return None
 
+    # Strip thinking tags if requested (default behavior)
+    if strip_think_tags:
+        output_string, _ = strip_thinking_tags(output_string)
+    
     trimmed = output_string.strip()
 
     # Find all matches of code blocks with non-greedy matching

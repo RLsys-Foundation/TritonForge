@@ -19,3 +19,10 @@ KERNELBENCH_VALIDATION = {
     "require_triton_ops": False,  # Loosened: Don't require actual Triton operations for now
     "allow_torch_in_kernel": True,  # Allow torch ops since we're not requiring tl.* ops
 }
+
+# Chain-of-Thought (CoT) settings for handling think tags
+KERNELBENCH_COT_SETTINGS = {
+    "strip_think_tags": True,  # Strip <think>...</think> tags before code extraction
+    "preserve_original_in_training": True,  # Keep original response with think tags for training
+    "log_thinking_content": True,  # Log the thinking content separately for analysis
+}

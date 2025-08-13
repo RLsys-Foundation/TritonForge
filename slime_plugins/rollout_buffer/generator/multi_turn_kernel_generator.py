@@ -21,8 +21,8 @@ from slime_plugins.rollout_buffer.generator.kernel_generator import (
     query_llm_with_retry,
     submit_kernel_eval_request,
 )
-from slime_plugins.rollout_buffer.generator.kernelbench_config import KERNELBENCH_REWARDS
-from slime_plugins.rollout_buffer.generator.reward_utils.kernel_utils import extract_last_code
+from slime_plugins.rollout_buffer.generator.kernelbench_config import KERNELBENCH_REWARDS, KERNELBENCH_COT_SETTINGS
+from slime_plugins.rollout_buffer.generator.reward_utils.kernel_utils import extract_last_code, strip_thinking_tags
 
 logger = logging.getLogger(__name__)
 
@@ -263,12 +263,29 @@ def rollout_multi_turn_trajectory(
     messages = None
     
     def eval_content(content: str) -> dict:
-        # Extract kernel code
-        kernel_code = extract_last_code(content)
+        # Handle thinking tags based on configuration
+        if KERNELBENCH_COT_SETTINGS.get("strip_think_tags", True):
+            # Strip thinking tags for code extraction and evaluation
+            # But preserve original content for training
+            cleaned_content, thinking_content = strip_thinking_tags(content)
+        else:
+            # Don't strip if disabled in config
+            cleaned_content = content
+            thinking_content = ""
+        
+        # Extract kernel code from cleaned content (without think tags if stripped)
+        kernel_code = extract_last_code(cleaned_content, strip_think_tags=False)  # Already handled above
 
-        # Evaluate the generated kernel
+        # Create evaluation item with cleaned content for evaluation
         eval_item = copy.deepcopy(item)
-        eval_item["messages"] = messages
+        # Create temporary messages with cleaned content for evaluation only
+        eval_messages = copy.deepcopy(messages[:-1])  # All but last message
+        eval_messages.append({
+            "role": "assistant",
+            "content": cleaned_content  # Use cleaned content for evaluation
+        })
+        eval_item["messages"] = eval_messages
+        
         eval_result = submit_kernel_eval_request(
             eval_semaphore,
             remote_eval_server_url,
@@ -276,7 +293,9 @@ def rollout_multi_turn_trajectory(
             backend=backend,
             baseline_timings=baseline_timings,
         )
-        return kernel_code, eval_result
+        
+        # Return kernel code, eval_result, and thinking content for logging
+        return kernel_code, eval_result, thinking_content
         
     
     # original_prompt is already a list of messages, so we use it directly
@@ -331,7 +350,7 @@ def rollout_multi_turn_trajectory(
             # Build messages for evaluation
             messages = prompt + [assistant_message] # in this case we don't accumulate messages
             
-        kernel_code, eval_result = eval_content(assistant_content)
+        kernel_code, eval_result, thinking_content = eval_content(assistant_content)
 
         # Extract reward and evaluation details
         turn_reward = eval_result.reward if hasattr(eval_result, "reward") else 0.0
@@ -350,6 +369,13 @@ def rollout_multi_turn_trajectory(
             },
             "reward": turn_reward,
         }
+        
+        # Add CoT-related fields based on configuration
+        if KERNELBENCH_COT_SETTINGS.get("log_thinking_content", True) and thinking_content:
+            history_entry["thinking_content"] = thinking_content
+        
+        if KERNELBENCH_COT_SETTINGS.get("preserve_original_in_training", True):
+            history_entry["original_content"] = assistant_content  # Full response with think tags
 
         # Calculate speedup if applicable
         if hasattr(eval_result, "exec_result") and eval_result.exec_result.runtime > 0 and baseline_timings:
@@ -383,12 +409,16 @@ def rollout_multi_turn_trajectory(
             "instance_id": item.get("instance_id", "unknown"),
             "turn_idx": turn_idx,
             "prompt": prompt_for_logging,
-            "response": assistant_content,
+            "response": assistant_content,  # Full response with think tags
             "kernel_code": kernel_code,
             "eval_result": history_entry["eval_result"],
             "reward": turn_reward,
             "extra_info": item.get("extra_info", {}),
         }
+        
+        # Add thinking content to log if available
+        if KERNELBENCH_COT_SETTINGS.get("log_thinking_content", True) and thinking_content:
+            turn_log_data["thinking_content"] = thinking_content
         save_multi_turn_data_to_local(turn_log_data, turn_idx=turn_idx, is_final=False)
 
         # Early termination conditions

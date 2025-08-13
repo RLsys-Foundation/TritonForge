@@ -23,6 +23,7 @@ from slime_plugins.rollout_buffer.generator.reward_utils.kernel_utils import (
     KernelEvalResult,
     KernelExecResult,
     extract_last_code,
+    strip_thinking_tags,
 )
 from slime_plugins.rollout_buffer.generator.triton_ops import TRITON_CORE_OPS
 
@@ -186,7 +187,8 @@ def submit_kernel_eval_request(
     if messages[-1]["role"] != "assistant":
         raise ValueError(f"last message must be assistant, but got {messages[-1]['role']}")
 
-    custom_model_src = extract_last_code(messages[-1]["content"])
+    # Extract code - will automatically strip think tags
+    custom_model_src = extract_last_code(messages[-1]["content"], strip_think_tags=True)
     if custom_model_src is None:
         return KernelEvalResult(
             eval_status="failed",
