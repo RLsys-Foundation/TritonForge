@@ -33,7 +33,7 @@ CKPT_ARGS=(
    --ref-load      /root/Qwen3-8B_torch_dist
    --load          /root/Qwen3-8B-slime-kernelbook-sft/
    --save          /root/Qwen3-8B-slime-kernelbook-sft/
-   --save-interval 200
+   --save-interval 150
 )
 
 # ---- SFT task (KernelBook, PyTorch→Triton) ----

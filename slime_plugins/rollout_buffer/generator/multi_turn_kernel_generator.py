@@ -35,7 +35,7 @@ DEFAULT_GAMMA = 0.4  # Discount factor for aggregated return
 
 # Logging configuration
 ENABLE_DETAILED_LOGGING = True  # Enable detailed multi-turn logging
-LOG_DIR = "/workspace/slime/multi_turn_logs"  # Directory for detailed logs
+LOG_DIR = "/root/slime/multi_turn_logs"  # Directory for detailed logs
 
 
 def save_multi_turn_data_to_local(data: dict, turn_idx: int = None, is_final: bool = False):

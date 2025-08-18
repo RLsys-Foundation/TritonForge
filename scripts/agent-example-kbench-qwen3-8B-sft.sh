@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Kernel Code Generation Agent Training Script - Qwen3-8B
-# This script trains Qwen3-8B to generate optimized CUDA kernels
+# Kernel Code Generation Agent Training Script - Qwen3-8B-SFT
+# This script trains Qwen3-8B-slime-kernelbook-sft to generate optimized CUDA kernels
 
 # Clean up previous runs
 pkill -9 sglang
@@ -28,9 +28,9 @@ export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches
 # Model paths - Updated for Qwen3-8B
 PROJECT_ROOT=/root
 export HF_MODEL_PATH=/root/Qwen3-8B
-export MCORE_MODEL_PATH=/root/Qwen3-8B_torch_dist
+export MCORE_MODEL_PATH=/root/Qwen3-8B-slime-kernelbook-sft
 export PROMPT_DATA=/root/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=/root/Qwen3-8B_torch_dist_save
+export MCORE_MODEL_PATH_SAVE=/root/Qwen3-8B-slime-kernelbook-sft_save
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
@@ -58,11 +58,23 @@ MODEL_ARGS=(
 )
 
 CKPT_ARGS=(
-   --hf-checkpoint ${HF_MODEL_PATH}
-   --ref-load ${MCORE_MODEL_PATH}
-   --load ${MCORE_MODEL_PATH_SAVE}
-   --save-interval 20  # Save more frequently for kernel training
-   --save ${MCORE_MODEL_PATH_SAVE}
+  # Load both actor and reference from your SFT checkpoint
+  --load ${MCORE_MODEL_PATH}
+  --ref-load ${MCORE_MODEL_PATH}
+
+  # Save RL-updated weights here
+  --save ${MCORE_MODEL_PATH_SAVE}
+  --save-interval 20
+
+  # Load weights only (avoid stale optimizer/RNG states)
+  --no-load-optim
+  --no-load-rng
+
+  # Optional fallback: if --load isn't found, try HF path
+  --hf-checkpoint ${HF_MODEL_PATH}
+
+  # Optional: pin a specific iteration if your fork supports it
+  # --load-iteration 149
 )
 
 ROLLOUT_ARGS=(
@@ -123,7 +135,7 @@ GRPO_ARGS=(
 
 OPTIMIZER_ARGS=(
    --optimizer adam
-   --lr 5e-7
+   --lr 1e-6
    --lr-decay-style constant
    --weight-decay 0.1
    --adam-beta1 0.9
@@ -136,8 +148,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B
-   --wandb-group Qwen3-8B-KBench-MultiTurn
+   --wandb-project slime-multiturn-qwen3-8B-sft
+   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn
    --wandb-key ${WANDB_KEY}
 )
 
