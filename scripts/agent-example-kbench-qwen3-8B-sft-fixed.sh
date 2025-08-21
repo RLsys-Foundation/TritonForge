@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Kernel Code Generation Agent Training Script - Qwen3-8B-SFT
-# This script trains Qwen3-8B-slime-kernelbook-sft to generate optimized CUDA kernels
+# Kernel Code Generation Agent Training Script - Qwen3-8B-SFT (Fixed)
+# This script trains Qwen3-8B-slime-kernelbook-sft with optimized multi-turn settings
 
 # Clean up previous runs
 pkill -9 sglang
@@ -25,7 +25,7 @@ export TP_SIZE=2    # Tensor parallelism
 export PP_SIZE=1    # Pipeline parallelism
 export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches 4 GPUs)
 
-# Model paths - Updated for Qwen3-8B
+# Model paths - Using SFT model
 PROJECT_ROOT=/root
 export HF_MODEL_PATH=/root/Qwen3-8B
 export MCORE_MODEL_PATH=/root/Qwen3-8B-slime-kernelbook-sft
@@ -84,22 +84,22 @@ ROLLOUT_ARGS=(
    --input-key prompt
    --label-key label
    --num-rollout 1000
-   --rollout-batch-size 4  # Reduced for faster debugging and lower memory usage
-   --rollout-max-response-len 11264  # Extended for multi-turn context accumulation
-   --rollout-temperature 1.0  # Higher for code diversity
+   --rollout-batch-size 2  # Further reduced for stability
+   --rollout-max-response-len 16384  # Increased from 11264 for multi-turn accumulation
+   --rollout-temperature 1.0
    --rollout-shuffle
-   --n-samples-per-prompt 8  # Generate 4 responses per prompt for pass@4
-   --global-batch-size 32  # Reduced from 64 to 8 for faster training iterations
+   --n-samples-per-prompt 8
+   --global-batch-size 16  # Reduced to match smaller rollout batch
    --balance-data
-   --max-turns 3  # Multi-turn dialogue horizon
-   --gamma 0.4  # Discount factor for aggregated return
+   --max-turns 3
+   --gamma 0.4
 )
 
 # EVAL_ARGS=(
 #    --eval-interval 20
 #    --eval-prompt-data kernelbench ${PROMPT_DATA}
 #    --n-samples-per-eval-prompt 16
-#    --eval-max-response-len 12288
+#    --eval-max-response-len 16384
 #    --eval-top-p 0.95
 # )
 
@@ -115,11 +115,9 @@ PERF_ARGS=(
    --recompute-method uniform
    --recompute-num-layers 1
 
-   # --grad-reduce-in-bf16
-   # --micro-batch-size 1
-   # --ref-micro-batch-size 1
+   # Dynamic batching with increased limits for longer sequences
    --use-dynamic-batch-size
-   --max-tokens-per-gpu 3072
+   --max-tokens-per-gpu 4096  # Increased from 3072 for longer multi-turn sequences
 )
 
 GRPO_ARGS=(
@@ -148,8 +146,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B-sft
-   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn
+   --wandb-project slime-multiturn-qwen3-8B-sft-fixed
+   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-Fixed
    --wandb-key ${WANDB_KEY}
 )
 
