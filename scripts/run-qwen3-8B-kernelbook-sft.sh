@@ -17,7 +17,9 @@ export PYTHONBUFFERED=16
 # optional: export WANDB_KEY=xxxxx
 export WANDB_KEY=${WANDB_KEY:-"0db9fd073cc9e49c8bcec2b0a6929792ecb64e4e"}
 
-export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True,max_split_size_mb:512"
+# Enhanced memory management to prevent OOM
+export PYTORCH_CUDA_ALLOC_CONF="expandable_segments:True,max_split_size_mb:256,garbage_collection_threshold:0.8"
+export CUDA_LAUNCH_BLOCKING=0  # Async kernel launches for better memory management
 
 # Single-node NVLink detection
 NVLINK_COUNT=$(nvidia-smi | grep -o "NVLink" | wc -l || echo 0)
@@ -28,23 +30,27 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 source "${SCRIPT_DIR}/models/qwen3-8B.sh"     # defines MODEL_ARGS
 
 # ---- checkpoints ----
+# RESUMING FROM CHECKPOINT: Will auto-detect and resume from step 174
 CKPT_ARGS=(
    --hf-checkpoint /root/Qwen3-8B/
    --ref-load      /root/Qwen3-8B_torch_dist
    --load          /root/Qwen3-8B-slime-kernelbook-sft/
    --save          /root/Qwen3-8B-slime-kernelbook-sft/
-   --save-interval 150
+   --save-interval 175
+   # NOTE: --finetune flag removed - it resets iteration to 0!
+   # Checkpoint will be auto-loaded since latest_checkpointed_iteration.txt exists
 )
 
 # ---- SFT task (KernelBook, PyTorch→Triton) ----
+# Using original batch size for checkpoint compatibility
 SFT_ARGS=(
    --rollout-function-path slime.rollout.sft_example.generate_rollout
-   --prompt-data /root/kernel_book/kernelbook_sft_format.parquet
+   --prompt-data /root/kernel_book/kernelbook_sft_final_combined.parquet
    --input-key messages
    --rollout-shuffle
    --num-epoch 1
-   --rollout-batch-size 32
-   --global-batch-size 32
+   --rollout-batch-size 32    # Original batch size for checkpoint compatibility
+   --global-batch-size 32      # Original batch size to match optimizer state
 
    --loss-type sft_loss
    --calculate-per-token-loss
@@ -64,7 +70,7 @@ PERF_ARGS=(
    # Recompute: full+uniform to minimize peak activations during RS
    --recompute-granularity full
    --recompute-method uniform
-   --recompute-num-layers 12      # safe; try 8 later for more speed
+   --recompute-num-layers 12
 
    # Use sample-based microbatching first for stability
    --micro-batch-size 1
@@ -92,8 +98,8 @@ OPTIMIZER_ARGS=(
 # ---- WandB (enable if desired) ----
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-kernelbook-sft
-   --wandb-group qwen3-8B-kernelbook-sft
+   --wandb-project slime-kernelbook-sft-combined
+   --wandb-group qwen3-8B-kernelbook-sft-combined
    --wandb-key ${WANDB_KEY}
 )
 
@@ -102,8 +108,8 @@ MISC_ARGS=(
    --attention-dropout 0.0
    --hidden-dropout 0.0
 
-   # --accumulate-allreduce-grads-in-fp32
-   # --attention-softmax-in-fp32
+   --accumulate-allreduce-grads-in-fp32
+   --attention-softmax-in-fp32
 
    # IMPORTANT: CP>1 requires the CP-aware attention path; do NOT force flash
    # --attention-backend flash
@@ -130,8 +136,10 @@ RUNTIME_ENV_JSON="{
 }"
 
 echo "==== Parallelism ===="
-echo "TP=2, PP=1, CP=1 → world=8 ⇒ DP=4"
-echo "BF16 + FlashAttention; full recompute; batch_size=32"
+echo "TP=2, PP=1, CP=4 → world=8 ⇒ DP=1"
+echo "BF16; full recompute (12 layers); batch_size=32"
+echo "RESUMING FROM CHECKPOINT: iter_0000174 (will continue from step 175)"
+echo "Memory optimizations: gradient recomputation, enhanced CUDA allocation"
 echo "====================="
 
 echo "[DEBUG] MODEL_ARGS:"; printf ' %q' "${MODEL_ARGS[@]}"; echo
