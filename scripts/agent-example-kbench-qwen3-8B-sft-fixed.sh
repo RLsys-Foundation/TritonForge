@@ -85,8 +85,8 @@ ROLLOUT_ARGS=(
    --label-key label
    --num-rollout 1000
    --rollout-batch-size 2  # Further reduced for stability
-   --rollout-max-response-len 16384  # Increased from 11264 for multi-turn accumulation
-   --rollout-temperature 1.0
+   --rollout-max-response-len 11264  # Increased from 11264 for multi-turn accumulation
+   --rollout-temperature 0.8
    --rollout-shuffle
    --n-samples-per-prompt 8
    --global-batch-size 16  # Reduced to match smaller rollout batch

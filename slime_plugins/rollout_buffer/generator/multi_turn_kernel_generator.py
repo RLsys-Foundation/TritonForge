@@ -310,6 +310,9 @@ def rollout_multi_turn_trajectory(
     
     for turn_idx in range(max_turns):
         if use_native_template:
+            # Log the current message count and last message role for debugging
+            logger.info(f"[Turn {turn_idx}] Starting with {len(messages)} messages, last role: {messages[-1]['role'] if messages else 'None'}")
+            
             # Generate response
             assistant_content = None  # Initialize to avoid UnboundLocalError
             try:
@@ -318,6 +321,12 @@ def rollout_multi_turn_trajectory(
                     "role": "assistant",
                     "content": assistant_content,
                 }
+                
+                # Log response length for debugging
+                logger.info(f"[Turn {turn_idx}] Generated response with {len(assistant_content)} characters")
+                if len(assistant_content) < 50:
+                    logger.warning(f"[Turn {turn_idx}] Short response detected: {assistant_content[:100]}")
+                    
             except Exception as e:
                 logger.error(f"Error in turn {turn_idx}: {e}")
                 assistant_content = f"Error: Failed to generate response in turn {turn_idx}"
@@ -339,6 +348,10 @@ def rollout_multi_turn_trajectory(
                     "role": "assistant",
                     "content": assistant_content,
                 }
+                
+                # Log response length for debugging
+                logger.info(f"[Turn {turn_idx}] Generated response with {len(assistant_content)} characters")
+                
             except Exception as e:
                 logger.error(f"Error in turn {turn_idx}: {e}")
                 assistant_content = f"Error: Failed to generate response in turn {turn_idx}"
@@ -426,6 +439,35 @@ def rollout_multi_turn_trajectory(
             # Got correctness + good performance, no need to continue
             logger.info(f"Early termination at turn {turn_idx}: achieved good performance")
             break
+
+        # Add improvement instruction for next turn (if not the last turn)
+        if use_native_template and turn_idx < max_turns - 1:
+            # Build improvement instruction based on evaluation results
+            improvement_parts = []
+            improvement_parts.append("Based on the previous attempt above, generate an improved kernel that:")
+            
+            if not history_entry["eval_result"]["compiled"]:
+                improvement_parts.append("1. Fixes the compilation errors")
+            elif not history_entry["eval_result"]["correctness"]:
+                improvement_parts.append("1. Fixes the correctness issues")
+            else:
+                improvement_parts.append("1. Maintains correctness")
+            
+            improvement_parts.append("2. Improves performance if possible")
+            improvement_parts.append("3. Maintains the same functionality as required")
+            
+            # Add evaluation feedback if available
+            if history_entry["eval_result"].get("error_message"):
+                improvement_parts.append(f"\nError from previous attempt: {history_entry['eval_result']['error_message'][:200]}")
+            
+            improvement_parts.append("\nPlease generate the improved kernel code:")
+            
+            improvement_message = {
+                "role": "user",
+                "content": "\n".join(improvement_parts)
+            }
+            messages.append(improvement_message)
+            logger.debug(f"Added improvement instruction for turn {turn_idx + 1}")
 
         # Removed early termination for multiple failures - let it try all turns
         # if turn_idx > 0 and all(r == 0 for r in turn_rewards):

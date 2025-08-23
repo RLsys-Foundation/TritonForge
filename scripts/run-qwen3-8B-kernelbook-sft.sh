@@ -36,7 +36,7 @@ CKPT_ARGS=(
    --ref-load      /root/Qwen3-8B_torch_dist
    --load          /root/Qwen3-8B-slime-kernelbook-sft/
    --save          /root/Qwen3-8B-slime-kernelbook-sft/
-   --save-interval 175
+   --save-interval 200
    # NOTE: --finetune flag removed - it resets iteration to 0!
    # Checkpoint will be auto-loaded since latest_checkpointed_iteration.txt exists
 )
@@ -45,7 +45,7 @@ CKPT_ARGS=(
 # Using original batch size for checkpoint compatibility
 SFT_ARGS=(
    --rollout-function-path slime.rollout.sft_example.generate_rollout
-   --prompt-data /root/kernel_book/kernelbook_sft_final_combined.parquet
+   --prompt-data /root/kernel_book/kernelbook_sft_filtered_10000.parquet
    --input-key messages
    --rollout-shuffle
    --num-epoch 1
@@ -98,8 +98,8 @@ OPTIMIZER_ARGS=(
 # ---- WandB (enable if desired) ----
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-kernelbook-sft-combined
-   --wandb-group qwen3-8B-kernelbook-sft-combined
+   --wandb-project slime-kernelbook-sft-filtered
+   --wandb-group qwen3-8B-kernelbook-sft-filtered
    --wandb-key ${WANDB_KEY}
 )
 
