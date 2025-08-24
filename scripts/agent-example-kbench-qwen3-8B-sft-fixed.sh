@@ -64,7 +64,7 @@ CKPT_ARGS=(
 
   # Save RL-updated weights here
   --save ${MCORE_MODEL_PATH_SAVE}
-  --save-interval 20
+  --save-interval 100
 
   # Load weights only (avoid stale optimizer/RNG states)
   --no-load-optim
@@ -84,12 +84,12 @@ ROLLOUT_ARGS=(
    --input-key prompt
    --label-key label
    --num-rollout 1000
-   --rollout-batch-size 2  # Further reduced for stability
-   --rollout-max-response-len 11264  # Increased from 11264 for multi-turn accumulation
+   --rollout-batch-size 4  # Further reduced for stability
+   --rollout-max-response-len 8192
    --rollout-temperature 0.8
    --rollout-shuffle
    --n-samples-per-prompt 8
-   --global-batch-size 16  # Reduced to match smaller rollout batch
+   --global-batch-size 32  # Reduced to match smaller rollout batch
    --balance-data
    --max-turns 3
    --gamma 0.4
@@ -146,8 +146,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B-sft-fixed
-   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-Fixed
+   --wandb-project slime-multiturn-qwen3-8B-sft-filtered
+   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-Filtered
    --wandb-key ${WANDB_KEY}
 )
 

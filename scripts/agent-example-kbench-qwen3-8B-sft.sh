@@ -64,7 +64,7 @@ CKPT_ARGS=(
 
   # Save RL-updated weights here
   --save ${MCORE_MODEL_PATH_SAVE}
-  --save-interval 20
+#   --save-interval 20
 
   # Load weights only (avoid stale optimizer/RNG states)
   --no-load-optim
