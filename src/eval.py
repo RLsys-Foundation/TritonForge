@@ -475,7 +475,7 @@ def eval_kernel_against_ref(
             return None
         else:
             metadata["compilation_error_name"] = get_error_name(e)
-            metadata["compilation_error"] = e
+            metadata["compilation_error"] = str(e)
             graceful_eval_cleanup(context, device, tempfile)
             return KernelExecResult(
                 compiled=False, metadata=metadata
@@ -496,7 +496,7 @@ def eval_kernel_against_ref(
         )
         # TODO: add metadata for runtime error e.g. error in launching kernel, illegal memory access, ...
         graceful_eval_cleanup(context, device, tempfile)
-        metadata["runtime_error"] = e
+        metadata["runtime_error"] = str(e)
         metadata["runtime_error_name"] = get_error_name(e)
         return KernelExecResult(
             compiled=True, correctness=False, metadata=metadata
@@ -520,7 +520,7 @@ def eval_kernel_against_ref(
         )
     except Exception as e:
         # TODO: add metadata for runtime error e.g. error in launching kernel, illegal memory access, ...
-        metadata["runtime_error"] = e
+        metadata["runtime_error"] = str(e)
         metadata["runtime_error_name"] = get_error_name(e)
         kernel_exec_result = KernelExecResult(
             compiled=True, correctness=False, metadata=metadata
@@ -559,7 +559,7 @@ def eval_kernel_against_ref(
         except Exception as e:
             if verbose:
                 print(f"[Eval] Error in Measuring Performance: {e}")
-            kernel_exec_result.metadata["error_during_performance"] = e
+            kernel_exec_result.metadata["error_during_performance"] = str(e)
 
     graceful_eval_cleanup(context, device, tempfile)
     return kernel_exec_result

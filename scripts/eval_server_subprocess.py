@@ -156,6 +156,16 @@ def run_isolated_evaluation(request_dict: Dict[str, Any], device_id: int) -> Dic
             device=0,  # Always device 0 since we set CUDA_VISIBLE_DEVICES
             backend=request_dict["backend"],
         )
+
+        # Handle None result (e.g., from SyntaxError)
+        if result is None:
+            return {
+                "success": False,
+                "error": "Evaluation returned None (likely due to SyntaxError in code)",
+                "category": "syntax_error",
+                "details": "The kernel code contains syntax errors or failed to compile",
+                "traceback": ""
+        }
         
         # Convert result to dict for serialization
         return {
@@ -261,6 +271,8 @@ async def evaluate_kernel(request: EvalRequest):
                     error_msg = f"CUDA illegal memory access on GPU {device_id}. The evaluation was isolated and the GPU remains healthy. {result_dict['details']}"
                 elif result_dict["category"] == "unsupported_architecture":
                     error_msg = f"Unsupported GPU architecture on device {device_id}. {result_dict['details']}"
+                elif result_dict["category"] == "syntax_error":
+                    error_msg = f"Syntax error in kernel code: {result_dict['details']}"
                 
                 # Log detailed error for debugging
                 if request.verbose:
