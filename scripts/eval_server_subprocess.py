@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
 Subprocess-isolated evaluation server for KernelBench
-Each evaluation runs in a separate process to prevent CUDA context corruption
+Each evaluation runs in a separate process to prevent GPU context corruption
+Supports both NVIDIA CUDA and AMD ROCm/HIP backends
 
 Default timeout: 600 seconds (10 minutes) to account for:
 - Process spawn overhead
-- CUDA context initialization per process
+- GPU context initialization per process
 - Triton kernel compilation (no cross-process caching)
 - Complex kernel evaluation
 """
@@ -29,39 +30,62 @@ import traceback
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(PROJECT_ROOT)
 
-# Set CUDA architecture for H100 compatibility at startup
-if torch.cuda.is_available():
-    device_capability = torch.cuda.get_device_capability()
-    major, minor = device_capability
+# AMD MI300X support: Set environment variables
+if 'HIP_VISIBLE_DEVICES' in os.environ or os.path.exists('/opt/rocm'):
+    # AMD GPU environment setup
+    os.environ['ROCM_HOME'] = os.environ.get('ROCM_HOME', '/opt/rocm')
+    os.environ['HIP_PLATFORM'] = 'amd'
+    os.environ['PYTORCH_ROCM_ARCH'] = os.environ.get('PYTORCH_ROCM_ARCH', 'gfx942')
     
-    # Set appropriate CUDA architecture
-    if major == 9 and minor == 0:  # H100
-        os.environ["TORCH_CUDA_ARCH_LIST"] = "9.0"
-        print(f"[Server] Detected H100 GPU, setting TORCH_CUDA_ARCH_LIST=9.0")
-    elif major == 8:  # Ampere
-        if minor == 6:
-            os.environ["TORCH_CUDA_ARCH_LIST"] = "8.6"
+    # Disable GPU core dumps for stability
+    os.environ['HSA_ENABLE_COREDUMP'] = '0'
+    os.environ['AMD_LOG_LEVEL'] = '0'
+    os.environ['ROCM_DISABLE_CRASH_DUMP'] = '1'
+    os.environ['HIP_ENABLE_COREDUMP'] = '0'
+    
+    # Import and set GPU architecture for AMD
+    from src.utils import set_gpu_arch
+    set_gpu_arch(["MI300X", "gfx942"])
+    
+    print(f"[Server] AMD GPU mode enabled - ROCm/HIP backend")
+    print(f"[Server] PYTORCH_ROCM_ARCH={os.environ.get('PYTORCH_ROCM_ARCH')}")
+    IS_AMD_GPU = True
+else:
+    IS_AMD_GPU = False
+    # NVIDIA GPU setup (original code)
+    if torch.cuda.is_available():
+        device_capability = torch.cuda.get_device_capability()
+        major, minor = device_capability
+        
+        # Set appropriate CUDA architecture
+        if major == 9 and minor == 0:  # H100
+            os.environ["TORCH_CUDA_ARCH_LIST"] = "9.0"
+            print(f"[Server] Detected H100 GPU, setting TORCH_CUDA_ARCH_LIST=9.0")
+        elif major == 8:  # Ampere
+            if minor == 6:
+                os.environ["TORCH_CUDA_ARCH_LIST"] = "8.6"
+            else:
+                os.environ["TORCH_CUDA_ARCH_LIST"] = "8.0"
+            print(f"[Server] Detected Ampere GPU, setting TORCH_CUDA_ARCH_LIST={major}.{minor}")
+        elif major == 7:  # Turing/Volta
+            if minor == 5:
+                os.environ["TORCH_CUDA_ARCH_LIST"] = "7.5"
+            else:
+                os.environ["TORCH_CUDA_ARCH_LIST"] = "7.0"
+            print(f"[Server] Detected Turing/Volta GPU, setting TORCH_CUDA_ARCH_LIST={major}.{minor}")
         else:
-            os.environ["TORCH_CUDA_ARCH_LIST"] = "8.0"
-        print(f"[Server] Detected Ampere GPU, setting TORCH_CUDA_ARCH_LIST={major}.{minor}")
-    elif major == 7:  # Turing/Volta
-        if minor == 5:
-            os.environ["TORCH_CUDA_ARCH_LIST"] = "7.5"
-        else:
-            os.environ["TORCH_CUDA_ARCH_LIST"] = "7.0"
-        print(f"[Server] Detected Turing/Volta GPU, setting TORCH_CUDA_ARCH_LIST={major}.{minor}")
-    else:
-        os.environ["TORCH_CUDA_ARCH_LIST"] = f"{major}.{minor}"
-        print(f"[Server] Detected GPU with compute capability {major}.{minor}")
+            os.environ["TORCH_CUDA_ARCH_LIST"] = f"{major}.{minor}"
+            print(f"[Server] Detected GPU with compute capability {major}.{minor}")
 
 app = FastAPI(
     title="KernelBench Subprocess Isolation Server",
-    description="Evaluation server with process isolation to prevent CUDA context corruption"
+    description="Evaluation server with process isolation to prevent GPU context corruption (CUDA/ROCm)"
 )
 
-# Configuration
+# Configuration - detect GPUs (works for both CUDA and ROCm)
 NUM_GPUS = torch.cuda.device_count() if torch.cuda.is_available() else 0
-print(f"[Server] Detected {NUM_GPUS} CUDA devices")
+gpu_type = "ROCm/HIP" if IS_AMD_GPU else "CUDA"
+print(f"[Server] Detected {NUM_GPUS} {gpu_type} devices")
 
 # GPU allocation tracking
 available_devices = list(range(NUM_GPUS))
@@ -85,7 +109,14 @@ def _check_gpu_health(device_id: int) -> bool:
     """Check GPU health in isolated process (module-level for pickling)"""
     import os
     import torch
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)
+    
+    # Set device visibility based on platform
+    if 'HIP_VISIBLE_DEVICES' in os.environ or os.path.exists('/opt/rocm'):
+        os.environ["HIP_VISIBLE_DEVICES"] = str(device_id)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)  # Set both for compatibility
+    else:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)
+    
     try:
         device = torch.device("cuda:0")
         torch.cuda.synchronize(device)
@@ -98,7 +129,14 @@ def _get_gpu_info(device_id: int) -> Dict[str, Any]:
     """Get GPU info in isolated process (module-level for pickling)"""
     import torch
     import os
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)
+    
+    # Set device visibility based on platform
+    if 'HIP_VISIBLE_DEVICES' in os.environ or os.path.exists('/opt/rocm'):
+        os.environ["HIP_VISIBLE_DEVICES"] = str(device_id)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)  # Set both for compatibility
+    else:
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)
+    
     try:
         props = torch.cuda.get_device_properties(0)
         return {
@@ -121,25 +159,46 @@ def run_isolated_evaluation(request_dict: Dict[str, Any], device_id: int) -> Dic
     """
     Run evaluation in an isolated subprocess
     This function is executed in a separate process
+    Supports both NVIDIA CUDA and AMD ROCm/HIP
     """
     import os
     import sys
     import torch
     
-    # Set up environment for kernel compilation with DSA
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)
-    os.environ["TORCH_USE_CUDA_DSA"] = "1"
-    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+    # AMD GPU support
+    if 'HIP_VISIBLE_DEVICES' in os.environ or os.path.exists('/opt/rocm'):
+        # AMD GPU settings
+        os.environ["HIP_VISIBLE_DEVICES"] = str(device_id)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)  # Set both for compatibility
+        os.environ['ROCM_HOME'] = os.environ.get('ROCM_HOME', '/opt/rocm')
+        os.environ['HIP_PLATFORM'] = 'amd'
+        os.environ['PYTORCH_ROCM_ARCH'] = os.environ.get('PYTORCH_ROCM_ARCH', 'gfx942')
+        
+        # Disable GPU core dumps
+        os.environ['HSA_ENABLE_COREDUMP'] = '0'
+        os.environ['AMD_LOG_LEVEL'] = '0'
+        os.environ['ROCM_DISABLE_CRASH_DUMP'] = '1'
+        os.environ['HIP_ENABLE_COREDUMP'] = '0'
+        
+        # For AMD, we may need different launch settings
+        os.environ["HIP_LAUNCH_BLOCKING"] = "1"
+    else:
+        # NVIDIA GPU settings (original)
+        os.environ["CUDA_VISIBLE_DEVICES"] = str(device_id)
+        os.environ["TORCH_USE_CUDA_DSA"] = "1"
+        os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
     
     # Set Triton cache directory to avoid conflicts
     os.environ["TRITON_CACHE_DIR"] = f"/tmp/triton_cache_gpu_{device_id}"
     
-    # Important: Do NOT clear cache on every evaluation (inefficient)
-    # DSA will be compiled into kernels automatically with env vars set
-    
     # Add project root to path
     PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     sys.path.insert(0, PROJECT_ROOT)
+    
+    # Import and set GPU architecture for AMD
+    if 'HIP_VISIBLE_DEVICES' in os.environ:
+        from src.utils import set_gpu_arch
+        set_gpu_arch(["MI300X", "gfx942"])
     
     try:
         from src.eval import eval_kernel_against_ref, KernelExecResult
@@ -295,18 +354,21 @@ async def evaluate_kernel(request: EvalRequest):
 @app.get("/")
 async def root():
     """Root endpoint providing service information"""
+    gpu_platform = "ROCm/HIP" if IS_AMD_GPU else "CUDA"
     return {
         "service": "KernelBench Subprocess Isolation Server",
         "status": "running",
+        "gpu_platform": gpu_platform,
         "cuda_available": torch.cuda.is_available(),
         "num_gpus": NUM_GPUS,
         "backends": ["cuda", "triton"],
         "features": [
             "Process isolation for each evaluation",
-            "CUDA DSA enabled during compilation",
+            f"{gpu_platform} GPU support",
             "GPU corruption prevention",
             "Automatic recovery from failures",
-            "No cross-contamination between evaluations"
+            "No cross-contamination between evaluations",
+            "AMD MI300X compatible" if IS_AMD_GPU else "NVIDIA GPU compatible"
         ]
     }
 
@@ -339,18 +401,26 @@ async def health_check():
     # Calculate busy devices
     busy_count = NUM_GPUS - len(available_devices)
     
+    gpu_platform = "ROCm/HIP" if IS_AMD_GPU else "CUDA"
+    arch_info = os.environ.get("PYTORCH_ROCM_ARCH", "not set") if IS_AMD_GPU else os.environ.get("TORCH_CUDA_ARCH_LIST", "not set")
+    
     return {
         "status": "healthy",
+        "gpu_platform": gpu_platform,
         "cuda_available": torch.cuda.is_available(),
         "supported_backends": ["cuda", "triton"],
         "total_gpu_devices": NUM_GPUS,
         "available_gpu_devices": len(available_devices),
         "busy_gpu_devices": busy_count,
         "available_device_ids": available_devices.copy(),
-        "cuda_arch_list": os.environ.get("TORCH_CUDA_ARCH_LIST", "not set"),
+        "gpu_arch": arch_info,
         "devices": gpu_info,
         "isolation": "subprocess",
-        "cuda_dsa": "enabled"
+        "gpu_settings": {
+            "rocm_home": os.environ.get("ROCM_HOME") if IS_AMD_GPU else None,
+            "hip_platform": os.environ.get("HIP_PLATFORM") if IS_AMD_GPU else None,
+            "cuda_dsa": "enabled" if not IS_AMD_GPU else None
+        }
     }
 
 
@@ -409,17 +479,20 @@ async def manual_cleanup():
 @app.get("/backend_info")
 async def backend_info():
     """Get information about supported backends"""
+    gpu_platform = "ROCm/HIP" if IS_AMD_GPU else "CUDA"
     return {
         "supported_backends": ["cuda", "triton"],
-        "default_backend": "cuda",
+        "default_backend": "triton" if IS_AMD_GPU else "cuda",
+        "gpu_platform": gpu_platform,
         "backend_descriptions": {
-            "cuda": "Custom CUDA kernels compiled with PyTorch's C++ extension system",
+            "cuda": f"Custom {gpu_platform} kernels compiled with PyTorch's C++ extension system",
             "triton": "Custom Triton kernels using OpenAI's Triton compiler"
         },
         "cuda_available": torch.cuda.is_available(),
         "triton_available": True,
         "process_isolation": True,
-        "cuda_dsa_enabled": True
+        "gpu_architecture": os.environ.get("PYTORCH_ROCM_ARCH") if IS_AMD_GPU else os.environ.get("TORCH_CUDA_ARCH_LIST"),
+        "cuda_dsa_enabled": not IS_AMD_GPU
     }
 
 
@@ -443,9 +516,20 @@ if __name__ == "__main__":
     if NUM_GPUS == 0:
         print("[Server] WARNING: No GPUs detected. Server will run but cannot evaluate kernels.")
     else:
-        print(f"[Server] Starting subprocess isolation server with {NUM_GPUS} GPUs")
-        print("[Server] Each evaluation will run in an isolated process")
-        print("[Server] CUDA DSA will be enabled for all kernel compilations")
+        gpu_platform = "ROCm/HIP" if IS_AMD_GPU else "CUDA"
+        gpu_arch = os.environ.get("PYTORCH_ROCM_ARCH") if IS_AMD_GPU else os.environ.get("TORCH_CUDA_ARCH_LIST", "auto")
+        
+        print(f"[Server] Starting subprocess isolation server")
+        print(f"[Server] GPU Platform: {gpu_platform}")
+        print(f"[Server] Number of GPUs: {NUM_GPUS}")
+        print(f"[Server] GPU Architecture: {gpu_arch}")
+        print(f"[Server] Each evaluation will run in an isolated process")
+        
+        if IS_AMD_GPU:
+            print(f"[Server] AMD MI300X optimizations enabled")
+            print(f"[Server] Core dumps disabled for stability")
+        else:
+            print(f"[Server] CUDA DSA will be enabled for all kernel compilations")
     
     # Start server
     uvicorn.run(
