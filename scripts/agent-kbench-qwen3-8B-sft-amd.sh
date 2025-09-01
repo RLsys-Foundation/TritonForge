@@ -38,12 +38,13 @@ export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches
 
 # Model paths - Using SFT model
 PROJECT_ROOT=/workspace
-# HF model is the original Qwen3-8B for tokenizer and config
-export HF_MODEL_PATH=/workspace/Qwen3-8B
+
+export HF_MODEL_PATH=${MODEL_DIR}/Qwen3-8B
+
 # Megatron checkpoint is the fine-tuned SFT model with trained weights
-export MCORE_MODEL_PATH=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered-megatron
+export MCORE_MODEL_PATH=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered
 export PROMPT_DATA=${DATA_DIR}/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered-megatron_save
+export MCORE_MODEL_PATH_SAVE=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered_save
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
@@ -81,7 +82,7 @@ CKPT_ARGS=(
 
   # Save RL-updated weights here
   --save ${MCORE_MODEL_PATH_SAVE}
-  --save-interval 100
+  --save-interval 200
 
   # Load weights only (avoid stale optimizer/RNG states)
   --no-load-optim
