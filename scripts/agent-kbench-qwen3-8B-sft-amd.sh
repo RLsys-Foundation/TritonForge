@@ -16,13 +16,13 @@ pkill -9 python
 set -ex
 
 ### AMD Support ###
-SLIME_DIR="/workspace/slime"
+SLIME_DIR="/home/jinpan12/workspace/slime"
 export SLIME_DIR=$SLIME_DIR
 
-MODEL_DIR="/workspace/models"
+MODEL_DIR="/home/jinpan12/workspace/models"
 export MODEL_DIR=$MODEL_DIR
 
-DATA_DIR="/workspace/slime/data"
+DATA_DIR="/home/jinpan12/workspace/slime/data"
 export DATA_DIR=$DATA_DIR
 ####################
 
@@ -35,9 +35,6 @@ export WANDB_KEY=${WANDB_KEY:-"0db9fd073cc9e49c8bcec2b0a6929792ecb64e4e"}
 export TP_SIZE=2    # Tensor parallelism
 export PP_SIZE=1    # Pipeline parallelism
 export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches 4 GPUs)
-
-# Model paths - Using SFT model
-PROJECT_ROOT=/workspace
 
 export HF_MODEL_PATH=${MODEL_DIR}/Qwen3-8B
 
@@ -164,7 +161,7 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B-sft-filtered-amd
+   --wandb-project slime-multiturn-qwen3-8B-sft-filtered-amd-test
    --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-AMD-MI300X
    --wandb-key ${WANDB_KEY}
 )
@@ -203,7 +200,7 @@ ray job submit --address="http://127.0.0.1:8265" \
    --actor-num-gpus-per-node 4 \
    --rollout-num-gpus 2 \
    --rollout-num-gpus-per-engine 1 \
-   --sglang-mem-fraction-static 0.4 \
+   --sglang-mem-fraction-static 0.5 \
    ${MODEL_ARGS[@]} \
    ${CKPT_ARGS[@]} \
    ${ROLLOUT_ARGS[@]} \
