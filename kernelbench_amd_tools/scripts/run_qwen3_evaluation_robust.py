@@ -19,7 +19,7 @@ from typing import Optional, Tuple, Dict, Any
 from openai import OpenAI
 
 # Add paths
-sys.path.insert(0, '/workspace/KernelBench')
+sys.path.insert(0, '/home/jinpan12/workspace/KernelBench')
 
 from src.eval import eval_kernel_against_ref
 from src.dataset import construct_kernelbench_dataset
@@ -30,7 +30,7 @@ os.environ['OPENAI_API_KEY'] = 'dummy-key'
 os.environ['ROCM_HOME'] = '/opt/rocm'
 os.environ['HIP_PLATFORM'] = 'amd'
 os.environ['PYTORCH_ROCM_ARCH'] = 'gfx942'
-os.environ['PYTHONPATH'] = '/workspace/KernelBench:' + os.environ.get('PYTHONPATH', '')
+os.environ['PYTHONPATH'] = '/home/jinpan12/workspace/KernelBench:' + os.environ.get('PYTHONPATH', '')
 
 # Disable GPU core dumps to prevent crashes
 os.environ['HSA_ENABLE_COREDUMP'] = '0'
@@ -68,7 +68,7 @@ import os
 import base64
 
 # Add paths
-sys.path.insert(0, '/workspace/KernelBench')
+sys.path.insert(0, '/home/jinpan12/workspace/KernelBench')
 
 # Set environment
 os.environ['ROCM_HOME'] = '/opt/rocm'
@@ -302,7 +302,7 @@ class RobustQwen3Evaluator:
         self.eval_timeout = eval_timeout
         
         # Setup directories
-        self.results_dir = f"/workspace/KernelBench/runs/{run_name}"
+        self.results_dir = f"/home/jinpan12/workspace/KernelBench/runs/{run_name}"
         self.report_dir = f"{self.results_dir}/reports"
         self.kernels_dir = f"{self.results_dir}/generated_kernels"
         self.logs_dir = f"{self.results_dir}/logs"
@@ -361,13 +361,13 @@ class RobustQwen3Evaluator:
     def load_jsonl_templates(self):
         """Load JSONL templates for prompt construction."""
         jsonl_files = {
-            1: "/workspace/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl",
-            2: "/workspace/slime/data/kernel_bench/kernel_bench_triton_level_2.jsonl"
+            1: "/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl",
+            2: "/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_2.jsonl"
         }
         
         for level, jsonl_path in jsonl_files.items():
             if not os.path.exists(jsonl_path):
-                alt_path = f"/workspace/slime/data/kernel_bench/kernel_bench_triton_level_{level}.jsonl"
+                alt_path = f"/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_{level}.jsonl"
                 if os.path.exists(alt_path):
                     jsonl_path = alt_path
                 else:
