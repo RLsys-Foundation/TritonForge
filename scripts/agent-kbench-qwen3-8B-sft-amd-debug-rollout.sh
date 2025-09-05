@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# Kernel Code Generation Agent Training Script - Qwen3-8B-SFT for AMD MI300X
-# This script trains Qwen3-8B-slime-kernelbook-sft with optimized multi-turn settings on AMD GPUs
+# DEBUG ROLLOUT ONLY VERSION
+# Kernel Code Generation Agent Debug Script - Qwen3-8B-SFT for AMD MI300X
+# This script runs ONLY rollout generation without training for debugging multi-turn issues
 
 # Clean up previous runs
 pkill -9 sglang
@@ -31,17 +32,18 @@ export PYTHONBUFFERED=16
 # Configure your WandB key if available
 export WANDB_KEY=${WANDB_KEY:-"0db9fd073cc9e49c8bcec2b0a6929792ecb64e4e"}
 
-# Model parallelism configuration - Fixed for 4 training GPUs
+# Model parallelism configuration - NOT USED in debug-rollout-only mode
+# These are kept for reference but won't be used since Megatron is not loaded
 export TP_SIZE=2    # Tensor parallelism
 export PP_SIZE=1    # Pipeline parallelism
-export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches 4 GPUs)
+export CP_SIZE=2    # Context parallelism
 
 export HF_MODEL_PATH=${MODEL_DIR}/Qwen3-8B
 
 # Megatron checkpoint is the fine-tuned SFT model with trained weights
 export MCORE_MODEL_PATH=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered
 export PROMPT_DATA=${DATA_DIR}/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered_save
+export MCORE_MODEL_PATH_SAVE=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered_debug_rollout
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
@@ -87,9 +89,6 @@ CKPT_ARGS=(
 
   # Optional fallback: if --load isn't found, try HF path
   --hf-checkpoint ${HF_MODEL_PATH}
-
-  # Optional: pin a specific iteration if your fork supports it
-  # --load-iteration 149
 )
 
 ROLLOUT_ARGS=(
@@ -98,26 +97,19 @@ ROLLOUT_ARGS=(
    --prompt-data ${PROMPT_DATA}
    --input-key prompt
    --label-key label
-   --num-rollout 1000
-   --rollout-batch-size 4  # Further reduced for stability
+   --num-rollout 100  # Reduced for debugging
+   --rollout-batch-size 2  # Smaller batch for debugging
    --rollout-max-response-len 8192
    --rollout-temperature 0.8
    --rollout-shuffle
-   --n-samples-per-prompt 8
-   --global-batch-size 32  # Reduced to match smaller rollout batch
+   --n-samples-per-prompt 4  # Reduced for debugging
+   --global-batch-size 8  # Reduced for debugging
    --balance-data
    --max-turns 3
    --gamma 0.4
 )
 
-# EVAL_ARGS=(
-#    --eval-interval 20
-#    --eval-prompt-data kernelbench ${PROMPT_DATA}
-#    --n-samples-per-eval-prompt 16
-#    --eval-max-response-len 16384
-#    --eval-top-p 0.95
-# )
-
+# Minimal performance args for rollout-only mode
 PERF_ARGS=(
    --tensor-model-parallel-size ${TP_SIZE}
    --sequence-parallel
@@ -126,15 +118,12 @@ PERF_ARGS=(
    --expert-model-parallel-size 1
    --expert-tensor-parallel-size 1
 
-   --recompute-granularity full
-   --recompute-method uniform
-   --recompute-num-layers 1
-
    # Dynamic batching with increased limits for longer sequences
    --use-dynamic-batch-size
-   --max-tokens-per-gpu 4096  # Increased from 3072 for longer multi-turn sequences
+   --max-tokens-per-gpu 4096
 )
 
+# GRPO args - NOT USED in debug mode but kept for compatibility
 GRPO_ARGS=(
    --advantage-estimator grpo
    --use-kl-loss
@@ -146,6 +135,7 @@ GRPO_ARGS=(
    --eps-clip-high 0.28
 )
 
+# Optimizer args - NOT USED in debug mode but kept for compatibility
 OPTIMIZER_ARGS=(
    --optimizer adam
    --lr 1e-6
@@ -153,7 +143,6 @@ OPTIMIZER_ARGS=(
    --weight-decay 0.1
    --adam-beta1 0.9
    --adam-beta2 0.98
-
    --optimizer-cpu-offload
    --overlap-cpu-optimizer-d2h-h2d
    --use-precision-aware-optimizer
@@ -161,8 +150,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B-sft-filtered-amd-mulit-turn-debug
-   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-AMD-MI300X
+   --wandb-project slime-DEBUG-ROLLOUT-ONLY-qwen3-8B-sft-amd
+   --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-DEBUG-ROLLOUT
    --wandb-key ${WANDB_KEY}
 )
 
@@ -172,7 +161,8 @@ export MASTER_PORT=${MASTER_PORT:-"12345"}
 
 ### AMD Support ###
 export RAY_EXPERIMENTAL_NOSET_HIP_VISIBLE_DEVICES=1  # Must set to 1 for AMD
-export HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-"0,1,2,3,4,5"}  # You can choose which GPUs to use
+# IMPORTANT: Only use 2 GPUs for rollout debugging
+export HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-"0,1"}  # Only 2 GPUs for rollout
 ####################
 
 NUM_GPUS=$(echo ${HIP_VISIBLE_DEVICES} | tr ',' '\n' | wc -l)
@@ -185,7 +175,15 @@ sleep 5
 echo "Checking Ray cluster status..."
 ray status
 
-# Submit the training job
+echo "=========================================="
+echo "RUNNING IN DEBUG ROLLOUT-ONLY MODE"
+echo "=========================================="
+echo "This will ONLY run rollout generation"
+echo "NO training or weight updates will occur"
+echo "Using only ${NUM_GPUS} GPUs for rollout engines"
+echo "=========================================="
+
+# Submit the debug rollout job
 ray job submit --address="http://127.0.0.1:8265" \
    --runtime-env-json='{
      "env_vars": {
@@ -196,8 +194,8 @@ ray job submit --address="http://127.0.0.1:8265" \
    }' \
    -- python3 train_async.py \
    --num-epoch 1000 \
-   --actor-num-nodes 1 \
-   --actor-num-gpus-per-node 4 \
+   --actor-num-nodes 0 \
+   --actor-num-gpus-per-node 0 \
    --rollout-num-gpus 2 \
    --rollout-num-gpus-per-engine 1 \
    --sglang-mem-fraction-static 0.5 \
@@ -216,9 +214,10 @@ ray job submit --address="http://127.0.0.1:8265" \
    --sglang-log-level error \
    --input-key prompt \
    --log-passrate \
-   --rollout-task-type kernelbench_multiturn
+   --rollout-task-type kernelbench_multiturn \
+   --debug-rollout-only
 
-# Clean up after training
+# Clean up after debugging
 pkill -9 sglang
 sleep 3
 ray stop --force
