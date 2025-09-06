@@ -31,10 +31,11 @@ export AMD_LOG_LEVEL=0
 export ROCM_DISABLE_CRASH_DUMP=1
 export HIP_ENABLE_COREDUMP=0
 
-# Window 1: Main rollout debug script (using only 2 GPUs)
+# Window 1: Main rollout debug script
+# Don't restrict HIP_VISIBLE_DEVICES here - let the script see all GPUs
+# The rollout script will use --rollout-num-gpus 2 to limit usage
 tmux new-session -d -s $SESSION_NAME -n $WINDOW_1
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "cd /home/jinpan12/workspace/slime" C-m
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "export HIP_VISIBLE_DEVICES='0,1'" C-m  # Only 2 GPUs for rollout
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "bash ./scripts/agent-kbench-qwen3-8B-sft-amd-debug-rollout.sh |& tee /home/jinpan12/workspace/slime/logs/slime_qwen3_sft_amd_debug_rollout.log" C-m
 
 # Window 2: Rollout buffer
@@ -70,7 +71,7 @@ echo "============================================"
 echo ""
 echo "Session: $SESSION_NAME"
 echo "Windows:"
-echo "  1. $WINDOW_1 - Rollout debugging (GPUs 0-1)"
+echo "  1. $WINDOW_1 - Rollout debugging (2 GPUs via --rollout-num-gpus)"
 echo "  2. $WINDOW_2 - Rollout buffer"
 echo "  3. $WINDOW_3 - ROBUST Evaluation server (GPUs 2-3)"
 echo ""
@@ -81,9 +82,9 @@ echo "  - ONLY rollout generation with SGLang"
 echo "  - Used to debug multi-turn inference issues"
 echo ""
 echo "GPU Allocation:"
-echo "  - Rollout: GPUs 0-1 (2 GPUs)"
-echo "  - Eval Server: GPUs 2-3 (2 GPUs)"
-echo "  - Total: 4 GPUs"
+echo "  - Rollout: 2 GPUs (managed by Ray placement)"
+echo "  - Eval Server: GPUs 2-3 (via HIP_VISIBLE_DEVICES)"
+echo "  - Total: 4+ GPUs available"
 echo ""
 echo "Logs:"
 echo "  Rollout:  /home/jinpan12/workspace/slime/logs/slime_qwen3_sft_amd_debug_rollout.log"

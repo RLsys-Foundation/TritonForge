@@ -32,11 +32,11 @@ export PYTHONBUFFERED=16
 # Configure your WandB key if available
 export WANDB_KEY=${WANDB_KEY:-"0db9fd073cc9e49c8bcec2b0a6929792ecb64e4e"}
 
-# Model parallelism configuration - NOT USED in debug-rollout-only mode
-# These are kept for reference but won't be used since Megatron is not loaded
+# Model parallelism configuration for debug-rollout-only mode
+# Adjusted for 2 GPU configuration (TP*PP*CP must equal world_size)
 export TP_SIZE=2    # Tensor parallelism
-export PP_SIZE=1    # Pipeline parallelism
-export CP_SIZE=2    # Context parallelism
+export PP_SIZE=1    # Pipeline parallelism  
+export CP_SIZE=1    # Context parallelism - reduced from 2 to 1 for 2 GPU setup
 
 export HF_MODEL_PATH=${MODEL_DIR}/Qwen3-8B
 
@@ -97,13 +97,13 @@ ROLLOUT_ARGS=(
    --prompt-data ${PROMPT_DATA}
    --input-key prompt
    --label-key label
-   --num-rollout 100  # Reduced for debugging
-   --rollout-batch-size 2  # Smaller batch for debugging
+   --num-rollout 1000
+   --rollout-batch-size 4
    --rollout-max-response-len 8192
    --rollout-temperature 0.8
    --rollout-shuffle
-   --n-samples-per-prompt 4  # Reduced for debugging
-   --global-batch-size 8  # Reduced for debugging
+   --n-samples-per-prompt 8
+   --global-batch-size 32
    --balance-data
    --max-turns 3
    --gamma 0.4
@@ -160,12 +160,14 @@ export MASTER_ADDR=${MASTER_ADDR:-"127.0.0.1"}
 export MASTER_PORT=${MASTER_PORT:-"12345"}
 
 ### AMD Support ###
+# IMPORTANT: For debugging, we use only 2 GPUs
+# Don't set HIP_VISIBLE_DEVICES here - let Ray manage all visible GPUs
+# Instead, we'll tell Ray to use only 2 GPUs via --rollout-num-gpus
 export RAY_EXPERIMENTAL_NOSET_HIP_VISIBLE_DEVICES=1  # Must set to 1 for AMD
-# IMPORTANT: Only use 2 GPUs for rollout debugging
-export HIP_VISIBLE_DEVICES=${HIP_VISIBLE_DEVICES:-"0,1"}  # Only 2 GPUs for rollout
 ####################
 
-NUM_GPUS=$(echo ${HIP_VISIBLE_DEVICES} | tr ',' '\n' | wc -l)
+# Use all available GPUs for Ray, but we'll restrict rollout to use only 2
+NUM_GPUS=$(rocm-smi --showid | grep -o 'GPU\[' | wc -l || echo "8")
 ray start --head --node-ip-address ${MASTER_ADDR} --num-gpus ${NUM_GPUS} --disable-usage-stats
 
 # Wait for Ray to be ready
@@ -180,7 +182,7 @@ echo "RUNNING IN DEBUG ROLLOUT-ONLY MODE"
 echo "=========================================="
 echo "This will ONLY run rollout generation"
 echo "NO training or weight updates will occur"
-echo "Using only ${NUM_GPUS} GPUs for rollout engines"
+echo "Ray cluster has ${NUM_GPUS} GPUs available, rollout uses 2 (TP=${TP_SIZE}*PP=${PP_SIZE}*CP=${CP_SIZE}=2)"
 echo "=========================================="
 
 # Submit the debug rollout job
@@ -194,8 +196,8 @@ ray job submit --address="http://127.0.0.1:8265" \
    }' \
    -- python3 train_async.py \
    --num-epoch 1000 \
-   --actor-num-nodes 0 \
-   --actor-num-gpus-per-node 0 \
+   --actor-num-nodes 1 \
+   --actor-num-gpus-per-node 2 \
    --rollout-num-gpus 2 \
    --rollout-num-gpus-per-engine 1 \
    --sglang-mem-fraction-static 0.5 \
