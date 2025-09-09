@@ -1,202 +1,265 @@
-# slime
+# TritonForge
 
-[中文版](./README_zh.md)
+**TritonForge** is an advanced reinforcement learning framework for training large language models to automatically convert PyTorch code into optimized Triton GPU kernels. Built on top of the SLIME framework, TritonForge enables multi-turn iterative kernel improvement through compilation feedback and performance metrics.
 
-**slime** is an LLM post-training framework for RL scaling, providing two core capabilities:
+## 🎯 Key Features
 
-1.  **High-Performance Training**: Supports efficient training in various modes by connecting Megatron with SGLang;
-2.  **Flexible Data Generation**: Enables arbitrary training data generation workflows through custom data generation interfaces and server-based engines.
+- **🔄 Multi-Turn Kernel Generation**: Iteratively improve kernels through up to 3 turns of refinement based on compilation errors and performance feedback
+- **⚡ Cross-Platform GPU Support**: Optimized for both NVIDIA (CUDA) and AMD (ROCm) GPUs
+- **🎮 Custom Rollout System**: Flexible single-turn and multi-turn kernel generators with configurable reward functions
+- **📊 Performance-Driven**: Rewards based on compilation success, correctness, and speedup metrics
+- **🔧 Production Ready**: Comprehensive testing, monitoring, and debugging capabilities
 
-## Table of Contents
+## 🏗️ Architecture
 
-  - [Architecture Overview](#architecture-overview)
-  - [Quick Start](#quick-start)
-      - [Environment Setup](#environment-setup)
-      - [Examples](#examples)
-        - [Dense Model Examples: GLM-4-9B and Qwen3-4B](#Dense-Model-Examples-GLM-4-9B-and-Qwen3-4B)
-        - [MoE Model Example: Qwen3-30B-A3B](#MoE-Model-Example-Qwen3-30B-A3B)
-        - [Multi-Turn + Tool Calling Example: Search-R1 lite](#Multi-Turn--Tool-Calling-Example-Search-R1-lite)
-        - [SFT Example: Qwen3-4B-Base with OpenHermes-2.5](#SFT-Example-Qwen3-4B-Base-with-OpenHermes-25)
-  - [Checkpoint Format Conversion](#checkpoint-format-conversion)
-  - [Starting the Training Process](#starting-the-training-process)
-  - [Argument Descriptions](#argument-descriptions)
-  - [Developer Guide](#developer-guide)
-  - [FAQ & Acknowledgements](#faq--acknowledgements)
+TritonForge combines three powerful systems:
 
-## Architecture Overview
+1. **Megatron-LM**: Distributed training with tensor/pipeline/data parallelism
+2. **SGLang**: High-performance inference serving for rollout generation  
+3. **Ray**: Orchestration of distributed training and rollout actors
 
-![arch](./imgs/arch.png)
+### Core Components
 
-**Module Descriptions**:
+```
+tritonforge/
+├── slime_plugins/rollout_buffer/     # Custom rollout and reward system
+│   ├── generator/
+│   │   ├── kernel_generator.py       # Single-turn kernel generation
+│   │   ├── multi_turn_kernel_generator.py  # Multi-turn with iterative improvement
+│   │   └── kernelbench_config.py     # Reward configuration
+│   └── buffer.py                      # Trajectory management server
+├── scripts/                           # Launch scripts for training
+│   ├── run_agent_kbench_qwen3_8B_sft_fixed.sh  # NVIDIA training
+│   └── run_agent_kbench_qwen3_8B_sft_amd.sh    # AMD training
+└── slime/                            # Core SLIME framework
+```
 
-  - **training (Megatron)**: Responsible for the main training process, reads data from the Data Buffer, and synchronizes parameters to the rollout module after training.
-  - **rollout (SGLang + router)**: Generates new data (including rewards/verifier outputs) and stores it in the Data Buffer.
-  - **data buffer**: A bridge module that manages prompt initialization, custom data, and rollout generation methods.
+## 🚀 Quick Start
 
-## Quick Start
+### Prerequisites
+
+- Docker with GPU support
+- NVIDIA GPUs (A100/H100) or AMD GPUs (MI300X)
+- At least 80GB GPU memory for 8B models
+- Python 3.10+
 
 ### Environment Setup
 
-Based on the `zhuzilin/slime:latest` image (pre-installed with SGLang 0.4.7 and Megatron):
-
+#### For NVIDIA GPUs:
 ```bash
 docker run --rm --gpus all --ipc=host --shm-size=16g \
   --ulimit memlock=-1 --ulimit stack=67108864 \
   -it zhuzilin/slime:latest /bin/bash
 
-git clone https://github.com/THUDM/slime.git
-cd slime
+git clone https://github.com/[your-org]/TritonForge.git
+cd TritonForge
 pip install -e .
 ```
 
-- If you prefer not to use Docker, or if it's inconvenient, please refer to [Setting up the Environment from Scratch](./docs/en/build.md).
-- For AMD support, please refer to [AMD Tutorial](./docs/en/amd_tutorial.md).
-
-### Examples
-
-#### Dense Model Examples: GLM-4-9B and Qwen3-4B
-
-We provide examples to use [GLM-4-9B](https://huggingface.co/THUDM/GLM-Z1-9B-0414) and [Qwen3-4B](https://huggingface.co/Qwen/Qwen3-4B), please refer to:
-
-- [Example: GLM-4-9B Model](docs/en/models/glm4-9B.md).
-- [Example: Qwen3-4B Model](docs/en/models/qwen3-4B.md).
-
-#### MoE Model Example: Qwen3-30B-A3B
-
-For MoE example, please refer to:
-
-- [Example: Qwen3-30B-A3B Model](docs/en/models/qwen3-30B-A3B.md).
-
-#### Multi-Turn + Tool Calling Example: Search-R1 lite
-
-For multi-turn and tool calling, we also provides an minimal reimplenmentation of Search-R1, please refer to:
-
-- [Example: Search-R1 lite](examples/search-r1/README.md).
-
-#### SFT Example: Qwen3-4B-Base with OpenHermes-2.5
-
-slime is not just a RL framework, we support a diverse set of post-training setups. For an SFT example, please refer to:
-
-- [Example: Qwen3-4B-Base with OpenHermes-2.5](docs/en/sft.md).
-
-### Checkpoint Format Conversion
-
-Since slime uses Megatron, and Megatron does not support loading Hugging Face checkpoints directly, we need to convert the model to the `torch_dist` format that Megatron supports.
-
-#### HF → Megatron torch\_dist ckpt
-
-Use [mbridge](https://github.com/ISEEKYAN/mbridge.git) for conversion:
-
+#### For AMD GPUs:
 ```bash
-cd slime/
-PYTHONPATH=/root/Megatron-LM python tools/convert_hf_to_torch_dist.py \
-    --hf-checkpoint /root/GLM-Z1-9B-0414 \
-    --save /root/GLM-Z1-9B-0414_torch_dist
+docker run --rm -it \
+  --device /dev/dri --device /dev/kfd \
+  --group-add video --cap-add SYS_PTRACE \
+  --security-opt seccomp=unconfined --privileged \
+  --shm-size 128G \
+  yushengsuthu/slime-amd:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch \
+  /bin/bash
+
+git clone https://github.com/[your-org]/TritonForge.git
+cd TritonForge
+pip install -e .
 ```
 
-When encountering a model that is not temporarily supported by mbridge, you can consider using [Pai-Megatron-Patch](https://github.com/alibaba/Pai-Megatron-Patch) for conversion.
+## 🎓 Training Models
 
-⚠️ If you encounter an issue where slime cannot be found, please run `pip install -e .` in the slime directory.
+### Single-Turn Kernel Generation
 
-#### Megatron torch\_dist → HF ckpt
-
-To convert a `torch_dist` checkpoint saved during training back to a Hugging Face checkpoint:
+For basic PyTorch to Triton conversion without iterative refinement:
 
 ```bash
-cd slime/
-PYTHONPATH=/root/Megatron-LM python tools/convert_torch_dist_to_hf.py \
-  --input-dir /path/to/torch_dist_ckpt/iter_xxx/ \
-  --output-dir /root/GLM-Z1-9B-0414-iter_xxx \
-  --origin-hf-dir /root/GLM-Z1-9B-0414
+# NVIDIA GPUs
+bash scripts/run_agent_kbench_qwen3_8B_sft.sh
+
+# AMD GPUs  
+bash scripts/run_agent_kbench_qwen3_8B_sft_amd_singleturn.sh
 ```
 
-⚠️ Since the `torch_dist` checkpoint converted by mbridge does not currently save args, you cannot convert the checkpoint from the previous step back to HF format.
+### Multi-Turn Kernel Generation (Recommended)
 
-#### Any Megatron ckpt → HF
-
-Applicable for custom save formats (e.g., `--ckpt-format torch`).
-
-The principle behind this conversion method is to reuse the function that updates parameters from Megatron to SGLang during training. This means reusing the training script and changing the original command from:
+For iterative kernel improvement through compilation feedback:
 
 ```bash
-ray job submit --address="http://127.0.0.1:8265" \
-   --runtime-env-json='{
-     "env_vars": { ...}
-   }' \
-   -- python3 train.py \
-   ... # Other training args
+# NVIDIA GPUs - Qwen3-8B with multi-turn refinement
+bash scripts/run_agent_kbench_qwen3_8B_sft_fixed.sh
+
+# AMD GPUs - Qwen3-8B with multi-turn refinement
+bash scripts/run_agent_kbench_qwen3_8B_sft_amd.sh
 ```
 
-To:
+The multi-turn scripts will automatically:
+1. Launch the training process with Ray
+2. Start the rollout buffer server for trajectory management
+3. Initialize the kernel evaluation server
+4. Enable iterative improvement with discount factor γ=0.4
+
+## ⚙️ Configuration
+
+### Key Training Parameters
 
 ```bash
-torchrun --nproc_per_node ${NUM_GPU} tools/convert_to_hf.py \
-   --load /your/saved/megatron_ckpt \
-   --output-dir /your/converted/hf_ckpt \
-   ... # Other training args
+# Multi-turn configuration
+--max-turns 3              # Maximum refinement iterations
+--gamma 0.4                # Discount factor for rewards
+--rollout-task-type kernelbench_multiturn  # Task type
+
+# Model parallelism (adjust based on GPU count)
+--tensor-model-parallel-size 2
+--context-parallel-size 2
+--pipeline-model-parallel-size 1
+
+# Rollout configuration
+--rollout-batch-size 4
+--n-samples-per-prompt 8
+--rollout-max-response-len 8192
+--rollout-temperature 0.8
 ```
 
-That is, keep all other arguments the same, and:
+### Custom Rollout Functions
 
-1.  Change the task launcher from `ray` to `torchrun`. Set the number of GPUs to the minimum required for Megatron's parallelism without data parallelism (DP). For example, if you are using `tp4`, set it to 4.
-2.  Make sure to change `--load` to the path of the checkpoint you want to load.
-3.  Add the `--output-dir` argument to specify where the converted Hugging Face checkpoint should be saved.
+TritonForge supports custom rollout and reward functions:
 
-## Starting the Training Process
+```python
+# In your training script
+ROLLOUT_ARGS=(
+   --rollout-function-path slime.rollout.agent_rollout.generate_rollout
+   --rm-type kernelbench_multiturn  # or 'kernelbench' for single-turn
+   --custom-generate-function-path your_module.custom_generate
+   --custom-rm-path your_module.custom_reward_func
+)
+```
 
-The entire program needs to be launched using Ray. First, you need to start a Ray cluster. On node 0, run:
+## 🔍 Kernel Generation Pipeline
 
+### Single-Turn Generation
+1. **Input**: PyTorch operation code
+2. **Output**: Triton kernel implementation
+3. **Evaluation**: Compilation, correctness, performance
+4. **Reward**: 0.1 (compile) + 0.3 (correct) + performance bonus
+
+### Multi-Turn Generation
+1. **Turn 0**: Initial kernel generation attempt
+2. **Turn 1**: Refinement based on compilation errors or performance gaps
+3. **Turn 2**: Further optimization for speedup
+4. **Aggregated Return**: R_t = Σ(γ^(i-t) * reward_i)
+
+Example multi-turn trajectory:
+```python
+# Turn 0: Initial attempt
+prompt: "Convert this PyTorch matmul to Triton..."
+response: "@triton.jit\ndef matmul_kernel(...)"
+eval: compiled=True, correct=False, error="dimension mismatch"
+reward: 0.1
+
+# Turn 1: Fix correctness issues  
+prompt: "Previous attempt had dimension mismatch. Fix the kernel..."
+response: "@triton.jit\ndef matmul_kernel_v2(...)"
+eval: compiled=True, correct=True, speedup=1.2x
+reward: 0.9
+
+# Turn 2: Optimize for performance
+prompt: "Kernel is correct but slow. Optimize for better performance..."
+response: "@triton.jit\ndef matmul_kernel_v3(...)"
+eval: compiled=True, correct=True, speedup=2.1x  
+reward: 1.4
+```
+
+## 📊 Monitoring & Debugging
+
+### Training Logs
 ```bash
-# Node0 (HEAD)
-ray start --head --node-ip-address ${MASTER_ADDR} \
-  --num-gpus 8 --disable-usage-stats
+# Monitor main training
+tail -f slime_qwen3_sft_fixed_train.log
 
-# Other Nodes
-ray start --address=${MASTER_ADDR}:6379 --num-gpus 8
+# Check rollout buffer
+tail -f buffer_qwen3_sft_fixed.log  
+
+# Watch evaluation server
+tail -f eval_server_qwen3_sft_fixed.log
 ```
 
-After the Ray cluster has started, you can submit a job from node 0, for example:
-
+### Multi-Turn Trajectories
 ```bash
-ray job submit --address="http://127.0.0.1:8265" \
-   --runtime-env-json='{
-     "env_vars": {
-        "PYTHONPATH": "/root/Megatron-LM/",
-        ... # e.g., no_proxy, API variables, etc.
-     }
-   }' \
-   -- python3 train.py \
-   --... # Other Megatron/SGLang/slime arguments
+# View detailed multi-turn data
+ls -la multi_turn_logs/trajectory_*.json
+cat multi_turn_logs/trajectory_latest.json | jq '.'
 ```
 
-### Argument Descriptions
+### Performance Metrics
+- **Compilation Rate**: Percentage of kernels that compile
+- **Correctness Rate**: Percentage passing functional tests
+- **Average Speedup**: Performance vs PyTorch baseline
+- **Turn Efficiency**: Success rate by turn number
 
-Arguments are divided into three categories:
+## 🛠️ Advanced Features
 
-1.  **Megatron arguments**: slime reads all arguments set in Megatron via `PYTHONPATH`. You can configure Megatron by passing arguments like `--tensor-model-parallel-size 2`.
-2.  **SGLang arguments**: All arguments for the installed SGLang are supported. These arguments must be prefixed with `--sglang-`. For example, `--mem-fraction-static` should be passed as `--sglang-mem-fraction-static`.
-3.  **slime-specific arguments**: Please refer to: [slime/utils/arguments.py](slime/utils/arguments.py)
+### Custom Reward Functions
 
-For complete usage instructions, please refer to the [Usage Documentation](docs/en/usage.md).
+Create your own reward model in `slime_plugins/rollout_buffer/generator/`:
 
-## Developer Guide
+```python
+def custom_reward_func(eval_result: dict) -> float:
+    reward = 0.0
+    if eval_result['compiled']:
+        reward += 0.1
+    if eval_result['correctness']:
+        reward += 0.3
+    if eval_result['speedup'] > 1.0:
+        reward += min(eval_result['speedup'] - 1.0, 1.0)
+    return reward
+```
 
-  - **Contributions are welcome\!** If you have suggestions for new features, performance tuning, or feedback on user experience, feel free to submit an Issue or PR 😊
+### Kernel Validation
 
-  - Use [pre-commit](https://pre-commit.com/) to ensure code style consistency for your commits:
+TritonForge includes comprehensive validation:
+- Syntax checking for Triton decorators
+- Import validation for required libraries
+- Performance benchmarking against PyTorch
+- Correctness testing with random inputs
 
-    ```bash
-    apt install pre-commit -y
-    pre-commit install
-    ```
+## 🤝 Contributing
 
-  - For debugging tips, please refer to the [Debugging Guide](docs/en/debug.md)
+We welcome contributions! Areas of interest:
+- Support for additional GPU architectures
+- New kernel optimization strategies
+- Enhanced multi-turn dialogue strategies
+- Performance profiling tools
 
-## Hardware Support
-- Nvidia: refer to this repo README
-- AMD: refer to the [toturial](docs/en/amd_toturial.md)
+## 📚 Documentation
 
-## FAQ & Acknowledgements
+- [Architecture Overview](docs/architecture.md)
+- [Multi-Turn Training Guide](docs/multi_turn.md)
+- [AMD Setup Guide](docs/amd_setup.md)
+- [Custom Generators](docs/custom_generators.md)
 
-  - For frequently asked questions, please see the [Q\&A](docs/en/qa.md)
-  - Special thanks to the following projects & communities: SGLang, Megatron‑LM, mbridge, OpenRLHF, veRL, and others.
+## 🙏 Acknowledgments
+
+TritonForge builds upon:
+- [SLIME](https://github.com/THUDM/slime) - The foundational RL framework
+- [Megatron-LM](https://github.com/NVIDIA/Megatron-LM) - Distributed training
+- [SGLang](https://github.com/sgl-project/sglang) - High-performance inference
+- [Triton](https://github.com/openai/triton) - GPU kernel language
+
+## 📄 License
+
+Apache 2.0 - See LICENSE file for details
+
+## 📧 Contact
+
+For questions and support:
+- Issue Tracker: [GitHub Issues](https://github.com/[your-org]/TritonForge/issues)
+- Discussions: [GitHub Discussions](https://github.com/[your-org]/TritonForge/discussions)
+
+---
+
+**TritonForge** - Forging optimal GPU kernels through reinforcement learning 🔥⚡
