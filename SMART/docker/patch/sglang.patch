@@ -1,0 +1,46 @@
+diff --git a/python/sglang/srt/configs/model_config.py b/python/sglang/srt/configs/model_config.py
+index 25104bd..6853784 100644
+--- a/python/sglang/srt/configs/model_config.py
++++ b/python/sglang/srt/configs/model_config.py
+@@ -405,14 +405,14 @@ class ModelConfig:
+             quant_method = quant_cfg.get("quant_method", "").lower()
+ 
+             # Detect which checkpoint is it
+-            for _, method in QUANTIZATION_METHODS.items():
+-                quantization_override = method.override_quantization_method(
+-                    quant_cfg, self.quantization
+-                )
+-                if quantization_override:
+-                    quant_method = quantization_override
+-                    self.quantization = quantization_override
+-                    break
++            #for _, method in QUANTIZATION_METHODS.items():
++            #    quantization_override = method.override_quantization_method(
++            #        quant_cfg, self.quantization
++            #    )
++            #    if quantization_override:
++            #        quant_method = quantization_override
++            #        self.quantization = quantization_override
++            #        break
+ 
+             # Verify quantization configurations.
+             if self.quantization is None:
+diff --git a/python/sglang/srt/layers/quantization/fp8.py b/python/sglang/srt/layers/quantization/fp8.py
+index f2c0d61..e548f39 100644
+--- a/python/sglang/srt/layers/quantization/fp8.py
++++ b/python/sglang/srt/layers/quantization/fp8.py
+@@ -340,10 +340,10 @@ class Fp8LinearMethod(LinearMethodBase):
+                 return
+             else:
+                 weight, weight_scale = layer.weight.data, layer.weight_scale_inv.data
+-            layer.weight = torch.nn.Parameter(weight, requires_grad=False)
+-            layer.weight_scale_inv = torch.nn.Parameter(
+-                weight_scale, requires_grad=False
+-            )
++            # layer.weight = torch.nn.Parameter(weight, requires_grad=False)
++            # layer.weight_scale_inv = torch.nn.Parameter(
++            #     weight_scale, requires_grad=False
++            # )
+             return
+ 
+         layer.weight = torch.nn.Parameter(layer.weight.data, requires_grad=False)
