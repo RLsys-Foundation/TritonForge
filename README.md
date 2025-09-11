@@ -1,28 +1,110 @@
+<div align="center">
+
+<img src="docs/assets/TritonForge_logo.png" alt="TritonForge Logo" width="400"/>
+
 # TritonForge
 
-**TritonForge** is an advanced machine learning framework that trains Large Language Models (LLMs) to automatically convert PyTorch operations into optimized Triton GPU kernels. The project combines supervised fine-tuning (SFT) followed by reinforcement learning (RL) to achieve state-of-the-art kernel generation performance.
+### 🔥 Forging Optimal GPU Kernels through SFT + RL
+
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
+[![CUDA](https://img.shields.io/badge/CUDA-11.8%2B-76B900.svg?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
+[![ROCm](https://img.shields.io/badge/ROCm-5.7%2B-red.svg?logo=amd)](https://www.amd.com/en/products/software/rocm.html)
+
+**Transform PyTorch Operations into Optimized GPU Kernels with LLMs**
+
+[📚 Documentation](docs/) | [🚀 Quick Start](#-quick-start) | [📊 Benchmarks](#-benchmarks) | [🤝 Contributing](#-contributing)
+
+</div>
+
+---
+
+## 🌟 Highlights
+
+<div align="center">
+
+| Feature | Description |
+|---------|------------|
+| 🎓 **Two-Stage Training** | SFT on high-quality datasets followed by RL optimization |
+| 🔄 **Multi-Turn Refinement** | Iterative kernel improvement through compilation feedback |
+| ⚡ **Cross-Platform** | Support for both NVIDIA CUDA and AMD ROCm GPUs |
+| 📈 **Performance Metrics** | Comprehensive evaluation of correctness and speedup |
+| 🧪 **200+ Benchmarks** | Extensive test suite across multiple difficulty levels |
+
+</div>
 
 ## 🎯 Overview
 
-TritonForge consists of two main components:
+**TritonForge** is an advanced machine learning framework that trains Large Language Models (LLMs) to automatically convert PyTorch operations into optimized Triton GPU kernels. By combining supervised fine-tuning (SFT) with reinforcement learning (RL), TritonForge achieves state-of-the-art performance in automated kernel generation.
 
-- **[SMART](SMART/)**: A reinforcement learning training framework built on top of [SLIME](https://github.com/THUDM/slime), enabling multi-turn iterative kernel improvement through compilation feedback and performance metrics
-- **[KBenchEval](KBenchEval/)**: A comprehensive benchmark suite for evaluating GPU kernel generation quality and performance
+### 🌍 Fully Open-Source Initiative
+
+We believe in complete transparency and community collaboration. **Everything is open-source**:
+
+- **📚 Training Data**: Custom-curated datasets ([GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook))
+- **🤖 Model Checkpoints**: All intermediate and final models ([HuggingFace](https://huggingface.co/JinnP))
+- **🏗️ Training Framework**: Complete SLIME-based RL implementation
+- **🐳 Environment Setup**: Docker images and configurations for both NVIDIA and AMD
+- **📖 Training Recipes**: Detailed scripts and hyperparameters for reproduction
+
+We invite the community to join us in advancing automated kernel generation together!
+
+<div align="center">
+<table>
+<tr>
+<td align="center" width="50%">
+
+### 🧠 SMART
+**Reinforcement Learning Framework**
+
+Built on [SLIME](https://github.com/THUDM/slime), enabling multi-turn iterative kernel improvement through compilation feedback and performance metrics
+
+[Learn More →](SMART/)
+
+</td>
+<td align="center" width="50%">
+
+### 📊 KBenchEval
+**Comprehensive Benchmark Suite**
+
+Based on [ScalingIntelligence/KernelBench](https://github.com/ScalingIntelligence/KernelBench), evaluating GPU kernel generation quality and performance across 200+ problems with varying difficulty levels
+
+[Learn More →](KBenchEval/)
+
+</td>
+</tr>
+</table>
+</div>
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Docker with GPU support
-- NVIDIA GPUs (A100/H100) or AMD GPUs (MI300X)
-- Python 3.10+
-- At least 80GB GPU memory for 8B models
+<div align="center">
+
+| Requirement | NVIDIA | AMD |
+|------------|--------|-----|
+| **GPU** | A100/H100 | MI300X |
+| **Memory** | 80GB+ | 80GB+ |
+| **Docker** | ✅ Required | ✅ Required |
+| **Python** | 3.10+ | 3.10+ |
+| **CUDA/ROCm** | 11.8+ | 5.7+ |
+
+</div>
 
 ### Installation
 
-The setup process differs between NVIDIA and AMD environments. Follow the appropriate guide below:
+Choose your platform and follow the setup guide:
 
-<details>
+<div align="center">
+
+[<img src="https://img.shields.io/badge/NVIDIA-Setup-76B900?style=for-the-badge&logo=nvidia&logoColor=white" height="40">](#nvidia-setup)
+&nbsp;&nbsp;&nbsp;&nbsp;
+[<img src="https://img.shields.io/badge/AMD-Setup-ED1C24?style=for-the-badge&logo=amd&logoColor=white" height="40">](#amd-setup)
+
+</div>
+
+<details id="nvidia-setup">
 <summary><b>📗 NVIDIA Setup</b></summary>
 
 #### 1. Launch Docker Container
@@ -85,7 +167,7 @@ huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir models/Q
 
 </details>
 
-<details>
+<details id="amd-setup">
 <summary><b>📕 AMD Setup</b></summary>
 
 #### 1. Allocate Compute Node (Azure)
@@ -200,26 +282,56 @@ huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir models/Q
 
 ## 🎓 Training Pipeline
 
-TritonForge employs a two-stage training approach:
+<div align="center">
+
+```mermaid
+graph LR
+    A["Base Model<br/>Qwen3-8B"] --> B["Stage 1: SFT<br/>facebook/KernelLLM"]
+    B --> C["Fine-tuned Model<br/>Qwen3-8B-Kernelbook-SFT"]
+    C --> D["Stage 2: RL<br/>KernelBench L1-L2"]
+    D --> E["Optimized Model<br/>TritonForge"]
+    
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style C fill:#9f9,stroke:#333,stroke-width:2px
+    style E fill:#99f,stroke:#333,stroke-width:2px
+```
+
+</div>
 
 ### Stage 1: Supervised Fine-Tuning (SFT)
 
-We first fine-tune the base Qwen3-8B model using the [facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM) dataset, which contains high-quality PyTorch-to-kernel conversion examples. The resulting model is available at [JinnP/Qwen3-8B-Kernelbook-SFT-filtered](https://huggingface.co/JinnP/Qwen3-8B-Kernelbook-SFT-filtered).
+We first fine-tune the base Qwen3-8B model using high-quality PyTorch-to-kernel conversion datasets:
+- [GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook): 18.2k curated PyTorch-to-Triton code pairs
+- [facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM): Additional high-quality kernel conversion examples
+
+The resulting model is available at [JinnP/Qwen3-8B-Kernelbook-SFT-filtered](https://huggingface.co/JinnP/Qwen3-8B-Kernelbook-SFT-filtered).
 
 ### Stage 2: Reinforcement Learning (RL)
 
 We then apply reinforcement learning using SMART to further improve the model's kernel generation capabilities:
 
-- **Training Data**: KernelBench Level 1-2 (200 problems)
-- **Approach**: Multi-turn iterative refinement with compilation and performance feedback
-- **Reward Signal**: Compilation success + functional correctness + speedup metrics
+<div align="center">
+
+| Component | Description |
+|-----------|------------|
+| **Training Data** | KernelBench Level 1-2 (200 problems) |
+| **Approach** | Multi-turn iterative refinement with compilation and performance feedback |
+| **Reward Signal** | Compilation success + functional correctness + speedup metrics |
+| **Max Turns** | 3 iterations per kernel |
+| **Discount Factor** | γ = 0.4 |
+
+</div>
 
 ## 📊 Quick Evaluation
 
 ### Test Single Problem
 
-<details>
-<summary><b>NVIDIA</b></summary>
+<div align="center">
+<table>
+<tr>
+<td>
+
+**NVIDIA**
 
 ```bash
 cd KBenchEval
@@ -232,10 +344,10 @@ python scripts/generate_and_eval_single_sample.py \
   verbose_logging=true
 ```
 
-</details>
+</td>
+<td>
 
-<details>
-<summary><b>AMD</b></summary>
+**AMD**
 
 ```bash
 cd KBenchEval
@@ -252,12 +364,19 @@ python scripts/generate_and_eval_single_sample.py \
   verbose=True
 ```
 
-</details>
+</td>
+</tr>
+</table>
+</div>
 
-### Run Full Evaluation
+### Run Full Training
 
-<details>
-<summary><b>NVIDIA</b></summary>
+<div align="center">
+<table>
+<tr>
+<td>
+
+**NVIDIA**
 
 ```bash
 cd SMART
@@ -265,10 +384,10 @@ cd SMART
 bash scripts/run_agent_kbench_qwen3_8B_sft_fixed.sh
 ```
 
-</details>
+</td>
+<td>
 
-<details>
-<summary><b>AMD</b></summary>
+**AMD**
 
 ```bash
 # Terminal 1: Launch SGLang server
@@ -285,42 +404,91 @@ cd KBenchEval
 python kernelbench_amd_tools/scripts/run_qwen3_evaluation_robust.py --levels 1,2
 ```
 
-</details>
+</td>
+</tr>
+</table>
+</div>
 
 ## 📁 Project Structure
 
 ```
 TritonForge/
-├── SMART/                      # RL training framework (based on SLIME)
-│   ├── slime/                  # Core SLIME framework
-│   ├── slime_plugins/          # Custom generators and reward functions
-│   └── scripts/                # Training launch scripts
-├── KBenchEval/                 # Kernel evaluation framework
-│   ├── KernelBench/            # Benchmark problems (Level 1-3)
-│   ├── src/                    # Evaluation logic
-│   └── scripts/                # Evaluation scripts
-└── models/                     # Downloaded model checkpoints
+├── 📁 SMART/                      # RL training framework (based on SLIME)
+│   ├── slime/                     # Core SLIME framework
+│   ├── slime_plugins/             # Custom generators and reward functions
+│   └── scripts/                   # Training launch scripts
+├── 📁 KBenchEval/                 # Kernel evaluation framework
+│   ├── KernelBench/               # Benchmark problems (Level 1-3)
+│   ├── src/                       # Evaluation logic
+│   └── scripts/                   # Evaluation scripts
+├── 📁 docs/                       # Documentation and assets
+│   └── assets/                    # Images and logos
+└── 📁 models/                     # Downloaded model checkpoints
 ```
 
-## 🔬 Results
+## 📊 Benchmarks
 
-*[Results section to be added after experiments complete]*
+<div align="center">
+
+| Metric | Description | Target |
+|--------|-------------|--------|
+| **fast_0** | Correctness rate | > 70% |
+| **fast_1** | Correct & faster than PyTorch | > 50% |
+| **fast_2** | Correct & 2x+ faster | > 30% |
+
+</div>
+
+*[Detailed results to be added after experiments complete]*
+
+## 🤝 Contributing
+
+We believe in community-driven development and welcome all contributions! Our goal is to work together with the community to push the boundaries of automated kernel generation.
+
+### How You Can Help
+
+- 🏗️ **Add GPU Architecture Support**: Extend to more NVIDIA/AMD/Intel GPUs
+- 📚 **Contribute Training Data**: Share high-quality PyTorch-to-kernel examples
+- 🚀 **Improve Optimization Strategies**: Develop new kernel optimization techniques
+- 🔄 **Enhance Multi-Turn Training**: Refine the iterative improvement process
+- 📈 **Build Analysis Tools**: Create performance profiling and debugging utilities
+- 🧪 **Add Benchmarks**: Contribute new challenging kernel problems
+- 📖 **Improve Documentation**: Help others understand and use the framework
+
+Join our community effort to democratize GPU kernel optimization! See our [Contributing Guide](CONTRIBUTING.md) for more details.
 
 ## 🙏 Acknowledgments
 
-- **[SLIME](https://github.com/THUDM/slime)**: The foundational RL framework that SMART is built upon
-- **[Meta AI](https://ai.meta.com/)**: For contributing Triton backend support to KernelBench evaluation
-- **[facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM)**: High-quality SFT dataset for kernel generation
-- **[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)**: Distributed training infrastructure
-- **[SGLang](https://github.com/sgl-project/sglang)**: High-performance inference serving
-- **[Triton](https://github.com/openai/triton)**: GPU kernel programming language
+<div align="center">
+
+| Project | Contribution |
+|---------|-------------|
+| **[KernelBench](https://github.com/ScalingIntelligence/KernelBench)** | The foundational benchmark framework that KBenchEval is built upon |
+| **[SLIME](https://github.com/THUDM/slime)** | The foundational RL framework that SMART is built upon |
+| **[Meta AI](https://ai.meta.com/)** | Laying the foundation for Triton backend support through [PR #35](https://github.com/ScalingIntelligence/KernelBench/pull/35) |
+| **[GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook)** | 18.2k curated PyTorch-to-Triton training pairs for SFT |
+| **[facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM)** | Additional high-quality SFT dataset for kernel generation |
+| **[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)** | Distributed training infrastructure |
+| **[SGLang](https://github.com/sgl-project/sglang)** | High-performance inference serving |
+| **[Triton](https://github.com/openai/triton)** | GPU kernel programming language |
+
+</div>
 
 ## 📄 License
 
-Apache 2.0 - See LICENSE file for details
+Apache 2.0 - See [LICENSE](LICENSE) file for details
 
 ## 📧 Contact
 
-For questions and support:
-- Issue Tracker: [GitHub Issues](https://github.com/RLsys-Foundation/TritonForge/issues)
-- Discussions: [GitHub Discussions](https://github.com/RLsys-Foundation/TritonForge/discussions)
+<div align="center">
+
+[<img src="https://img.shields.io/badge/GitHub-Issues-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/RLsys-Foundation/TritonForge/issues)
+&nbsp;&nbsp;&nbsp;&nbsp;
+[<img src="https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github&logoColor=white">](https://github.com/RLsys-Foundation/TritonForge/discussions)
+
+</div>
+
+---
+
+<div align="center">
+<b>TritonForge</b> - Forging optimal GPU kernels through reinforcement learning 🔥⚡
+</div>
