@@ -1,145 +1,436 @@
-# KernelBench: Can LLMs Write Efficient GPU Kernels? [ICML '25]
-[arXiv](https://arxiv.org/html/2502.10517v1) | [blog post](https://scalingintelligence.stanford.edu/blogs/kernelbench/) | [HuggingFace Dataset](https://huggingface.co/datasets/ScalingIntelligence/KernelBench) | 
+# KBenchEval (KernelBench)
 
-A benchmark for evaluating LLMs' ability to generate efficient GPU kernels
+**KBenchEval** is a comprehensive benchmark suite for evaluating Large Language Models' ability to generate efficient GPU kernels. The framework supports both CUDA and Triton kernel generation, with evaluation capabilities for correctness and performance across NVIDIA and AMD GPUs.
+
+[arXiv](https://arxiv.org/html/2502.10517v1) | [blog post](https://scalingintelligence.stanford.edu/blogs/kernelbench/) | [HuggingFace Dataset](https://huggingface.co/datasets/ScalingIntelligence/KernelBench)
 
 <img src="./assets/figures/KernelBenchMascot.png" width="200">
 
-<!-- See [blog post](https://scalingintelligence.stanford.edu/blogs/kernelbench/) and [arXiv paper](https://arxiv.org/html/2502.10517v1) for more details. -->
+## 🙏 Acknowledgments
+
+Special thanks to **[Meta AI](https://ai.meta.com/)** and the **Project Popcorn** team for their significant contribution in adding **Triton backend support** to KernelBench evaluation, enabling LLMs to generate and evaluate Triton kernels alongside CUDA kernels. This addition has been instrumental in advancing the field of automated kernel generation.
 
 ## 👋 Task Description
-We structure the problem for LLM to transpile operators described in PyTorch to CUDA kernels, at whatever level of granularity it desires to.
+
+We structure the problem for LLMs to transpile operators described in PyTorch to GPU kernels (CUDA or Triton), at whatever level of granularity desired.
+
 ![KernelBenchMascot](./assets/figures/KernelBenchWorkFlow.png)
 
-We construct KernelBench to have 4 Levels of categories:
-- **Level 1 🧱**:  Single-kernel operators (100 Problems)
-    The foundational building blocks of neural nets (Convolutions, Matrix multiplies, Layer normalization)
-- **Level 2 🔗**:  Simple fusion patterns (100 Problems)
-    A fused kernel would be faster than separated kernels (Conv + Bias + ReLU, Matmul + Scale + Sigmoid)
-- **Level 3 ⚛️**:  Full model architectures (50 Problems)
-    Optimize entire model architectures end-to-end (MobileNet, VGG, MiniGPT, Mamba) 
-- **Level 4 🤗**:  Level Hugging Face 
-    Optimize whole model architectures from HuggingFace
+### Benchmark Levels
+
+- **Level 1 🧱**: Single-kernel operators (100 Problems)
+  - Foundational building blocks: Convolutions, Matrix multiplies, Layer normalization
+- **Level 2 🔗**: Simple fusion patterns (100 Problems)
+  - Fused kernels for better performance: Conv + Bias + ReLU, Matmul + Scale + Sigmoid
+- **Level 3 ⚛️**: Full model architectures (50 Problems)
+  - End-to-end optimization: MobileNet, VGG, MiniGPT, Mamba
+- **Level 4 🤗**: HuggingFace models
+  - Optimize whole model architectures from HuggingFace
+
+## 🔧 Setup
+
+### Prerequisites
+
+- Python 3.10+
+- CUDA Toolkit 11.8+ (NVIDIA) or ROCm 5.7+ (AMD)
+- PyTorch with GPU support
+- At least 16GB GPU memory
+
+### Installation
+
+<details>
+<summary><b>📗 NVIDIA Environment</b></summary>
+
+#### 1. Launch Docker Container (Recommended)
+
+```bash
+docker pull zhuzilin/slime:20250706-v2
+
+docker run --rm --gpus all --ipc=host --shm-size=128g \
+  --ulimit memlock=-1 --ulimit stack=67108864 \
+  -v $HOME:$HOME \
+  -it zhuzilin/slime:20250706-v2 /bin/bash
+```
+
+#### 2. Clone and Setup
+
+```bash
+# Clone repository
+git clone https://github.com/RLsys-Foundation/TritonForge/KBenchEval.git
+cd KBenchEval
+
+# Create virtual environment (recommended for NVIDIA setup)
+python -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+pip install -e .
+```
+
+#### 3. Set API Keys (if using LLM APIs)
+
+```bash
+export OPENAI_API_KEY="your-key"
+export ANTHROPIC_API_KEY="your-key"
+export DEEPSEEK_API_KEY="your-key"
+```
+
+#### 4. Verify Installation
+
+```bash
+# Test single problem evaluation
+python scripts/generate_and_eval_single_sample.py \
+  dataset_src="huggingface" \
+  level=1 \
+  problem_id=0 \
+  verbose_logging=true
+```
+
+</details>
+
+<details>
+<summary><b>📕 AMD Environment</b></summary>
+
+#### 1. Allocate Compute Node (Azure)
+
+```bash
+tmux new-session -d -s kernel_agent_node_0
+
+salloc --nodes=1 --exclusive --gres=gpu:8 \
+          --time=120-00:00:00 \
+          --nodelist=pdfc-aig-00001N \
+          --job-name=Kernel-Agent
+```
+
+#### 2. Launch Docker Container
+
+```bash
+docker pull rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch_apex_vim
+
+docker run -it \
+  --device /dev/dri \
+  --device /dev/kfd \
+  -p 8265:8265 \
+  --group-add video \
+  --cap-add SYS_PTRACE \
+  --security-opt seccomp=unconfined \
+  --privileged \
+  -v $HOME/.ssh:/root/.ssh \
+  -v $HOME:$HOME \
+  --shm-size 128G \
+  --name slime_dev \
+  --ulimit memlock=-1 \
+  --ulimit stack=67108864 \
+  -w $PWD \
+  rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch_apex_vim \
+  /bin/bash
+```
+
+#### 3. Clone AMD-Optimized Version
+
+```bash
+git clone git@github.com:SwordFaith/KernelBench.git KBenchEval
+cd KBenchEval
+git checkout AMD-ver
+```
+
+#### 4. Set Environment Variables
+
+```bash
+# AMD GPU configuration
+export ROCM_HOME=/opt/rocm
+export HIP_PLATFORM=amd
+export PYTORCH_ROCM_ARCH=gfx942
+export PATH=$ROCM_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$ROCM_HOME/lib:$LD_LIBRARY_PATH
+export SGLANG_API_KEY=local-key
+export PYTHONPATH=/workspace/KBenchEval:$PYTHONPATH
+
+# AMD optimizations
+export HSA_ENABLE_SDMA=0
+
+# Prevent GPU core dumps
+export HSA_ENABLE_COREDUMP=0
+export AMD_LOG_LEVEL=0
+export ROCM_DISABLE_CRASH_DUMP=1
+export HIP_ENABLE_COREDUMP=0
+export HSA_TOOLS_LIB=/opt/rocm/lib/librocm-debug-agent.so.2:0
+export GPU_MAX_HW_QUEUES=1
+```
+
+#### 5. Install Dependencies
+
+```bash
+# Install additional AMD-specific dependencies
+pip install pydra_config==0.0.15
+cd /usr/local/lib/python3.12/dist-packages && ln -sf pydra_config pydra
+cd -
+
+pip install together google-generativeai
+pip install -r requirements.txt
+pip install -e .
+```
+
+#### 6. Verify Installation
+
+```bash
+# Test AMD GPU detection
+python tests/test_amd_mi300x.py
+
+# Test single problem evaluation
+export OPENAI_API_KEY="dummy-key"
+python scripts/generate_and_eval_single_sample.py \
+  dataset_src=local \
+  level=1 \
+  problem_id=19 \
+  gpu_arch='["MI300X"]' \
+  backend=triton \
+  server_type=sglang \
+  eval_device=0 \
+  verbose=True
+```
+
+</details>
 
 ## ⚖️ Evaluation
-#### Methodology
-To evaluate model-generated kernels, we need to check if they:
-- **is correct ✅**: check against reference torch operators `n_correctness` times on randomized inputs.
-- **is performant ⏱️**: compare against reference torch operators `n_trial` times to measure speedup between runtimes.
 
-Check out `src/eval.py` for details on how we implement correctness check and timing. 
+### Methodology
 
-We provide a convenient script `scripts/run_and_check.py` to evaluate one single sample source code against a reference source code, check correctness and compute speedup. You can use this to evaluate a model-generated kernel. 
+To evaluate model-generated kernels, we check if they:
+- **Are correct ✅**: Check against reference PyTorch operators `n_correctness` times on randomized inputs
+- **Are performant ⏱️**: Compare against reference operators `n_trial` times to measure speedup
 
-#### Overall Benchmark Metric
+Check out `src/eval.py` for implementation details.
 
-Since we need to capture **both** correctness and performance, we define a metric `fast_p`: fraction of tasks that are both correct and have a speedup greater than threshold `p`; speedup is computed as the ratio of PyTorch reference wall-clock time to generated kernel time.
+### Benchmark Metrics
 
-Some examples to illustrate this metric that filters based on speedups:
-* `fast_1` is the fraction of tasks that LM-generated kernels are both correct and **faster** than PyTorch baseline
-* `fast_2` is the fraction of tasks that LM-generated kernels are both correct and **at least 2x faster** than PyTorch baseline
-* `fast_0` is the fraction of tasks that LM-generated kernels are **correct**. (same as correctness rate)
+We use the metric `fast_p`: fraction of tasks that are both correct and have a speedup greater than threshold `p`.
 
-You can increase speedup threshold `p` to make the task more challenging.
-
-#### Compute Overall Benchmark Performance
-
-We provide a script `scripts/greedy_analysis.py` to compute the overall benchmark performance. 
-Since we need to capture **both** correctness and performance, we use a metric `fast_p`: fraction of tasks that are both correct and have a speedup greater than threshold `p`; speedup is computed as the ratio of PyTorch reference wall-clock time to generated kernel time.
-
-<!-- TODO: update to provide fast_p measurement script -->
-
-## 🔍 Directory Structure
-We organize the repo into the following structure:
-```
-KernelBench/
-├── assets/
-├── KernelBench/ # Benchmark dataset files
-├── src/ # KernelBench logic code
-│   ├── unit_tests/  
-│   ├── prompts/
-│   ├── ....
-├── scripts/ # helpful scripts to run the benchmark
-├── results/ # baseline times across hardware 
-├── runs/ # where your runs will be stored
-```
-
-## 🔧 Set up
-```
-conda create --name kernel-bench python=3.10
-conda activate kernel-bench
-pip install -r requirements.txt
-pip install -e . 
-```
-
-To call LLM API providers, set your `{INFERENCE_SERVER_PROVIDER}_API_KEY` API key.
-
-Running and profiling kernels require a GPU. 
-If you don't have GPU available locally, you can set up [Modal](https://modal.com/). Set up your modal token after creating an account by running `modal token new`. Then, use the `generate_and_eval_single_sample_modal.py` script.
+- **fast_0**: Fraction of kernels that are **correct** (correctness rate)
+- **fast_1**: Fraction that are correct AND **faster** than PyTorch
+- **fast_2**: Fraction that are correct AND **at least 2x faster**
 
 ## 🚀 Usage
-### Run on a single problem 
-It is easier to get started with a single problem. This will fetch the problem, generate a sample, and evaluate the sample.
+
+### Single Problem Evaluation
+
+<details>
+<summary><b>NVIDIA</b></summary>
+
+```bash
+cd KBenchEval
+source .venv/bin/activate  # If using virtual environment
+
+# Run level 2, problem 40
+python scripts/generate_and_eval_single_sample.py \
+  dataset_src="huggingface" \
+  level=2 \
+  problem_id=40 \
+  verbose_logging=true
+```
+
+</details>
+
+<details>
+<summary><b>AMD</b></summary>
+
+```bash
+cd KBenchEval
+
+python scripts/generate_and_eval_single_sample.py \
+  dataset_src=local \
+  level=2 \
+  problem_id=40 \
+  gpu_arch='["MI300X"]' \
+  backend=triton \
+  server_type=sglang \
+  eval_device=0 \
+  verbose=True
+```
+
+</details>
+
+### Batch Evaluation
+
+<details>
+<summary><b>NVIDIA</b></summary>
+
+```bash
+# 1. Generate responses for all Level 1 problems
+python scripts/generate_samples.py \
+  run_name=nvidia_test_level1 \
+  dataset_src=huggingface \
+  level=1 \
+  num_workers=50 \
+  server_type=deepseek \
+  model_name=deepseek-chat \
+  temperature=0
+
+# 2. Evaluate generated kernels
+python scripts/eval_from_generations.py \
+  run_name=nvidia_test_level1 \
+  dataset_src=local \
+  level=1 \
+  num_gpu_devices=8 \
+  timeout=300
+
+# Optional: Build compilation cache first for speedup
+python scripts/eval_from_generations.py \
+  run_name=nvidia_test_level1 \
+  dataset_src=local \
+  level=1 \
+  num_gpu_devices=8 \
+  timeout=300 \
+  build_cache=True \
+  num_cpu_workers=32
+
+# 3. Analyze results
+python scripts/benchmark_eval_analysis.py \
+  run_name=nvidia_test_level1 \
+  level=1 \
+  hardware=A100 \
+  baseline=baseline_time_torch
+```
+
+</details>
+
+<details>
+<summary><b>AMD</b></summary>
+
+```bash
+# Terminal 1: Launch SGLang server for model inference
+HIP_VISIBLE_DEVICES=2,3 python3 -m sglang.launch_server \
+  --model-path models/Qwen3-8B-Kernelbook-SFT-HF \
+  --tp 2 \
+  --trust-remote-code \
+  --host 0.0.0.0 \
+  --port 30000
+
+# Terminal 2: Run comprehensive evaluation
+cd KBenchEval
+python kernelbench_amd_tools/scripts/run_qwen3_evaluation_robust.py \
+  --levels 1,2
+```
+
+</details>
+
+### Evaluation Server
+
+For handling resource-intensive Triton kernels:
+
+```bash
+# Standard evaluation server
+python scripts/simple_eval_server.py
+
+# Server with CUDA memory fixes (for problematic Triton kernels)
+python scripts/simple_eval_server_cuda_fix.py
+```
+
+## 🔍 Directory Structure
 
 ```
-# for example, run level 2 problem 40 from huggingface
-
-python3 scripts/generate_and_eval_single_sample.py dataset_src="huggingface" level=2 problem_id=40
-
-# dataset_src could be "local" or "huggingface"
-# add .verbose_logging for more visbility
+KBenchEval/
+├── assets/                         # Figures and documentation assets
+├── KernelBench/                    # Benchmark dataset files
+│   ├── level1/                     # Single operators (100 problems)
+│   ├── level2/                     # Fusion patterns (100 problems)
+│   └── level3/                     # Full models (50 problems)
+├── src/                            # Core evaluation logic
+│   ├── eval.py                     # Correctness and performance evaluation
+│   ├── dataset.py                  # Dataset loading and management
+│   ├── compile.py                  # Kernel compilation
+│   ├── prompt_constructor*.py      # LLM prompt templates
+│   └── amd_profiling.py           # AMD GPU support
+├── scripts/                        # Evaluation and analysis scripts
+│   ├── generate_and_eval_single_sample.py  # Single problem testing
+│   ├── eval_from_generations.py            # Batch evaluation
+│   ├── benchmark_eval_analysis.py          # Performance analysis
+│   └── simple_eval_server*.py              # Evaluation servers
+├── kernelbench_amd_tools/          # AMD-specific utilities
+│   └── scripts/                    # AMD evaluation scripts
+├── results/                        # Baseline times across hardware
+├── runs/                           # Generated kernels and evaluations
+└── tests/                          # Unit tests
 ```
 
-### Run on all problems 
+## 🛠️ Advanced Features
 
-```
-# 1. Generate responses and store kernels locally to runs/{run_name} directory
-python3 scripts/generate_samples.py run_name=test_hf_level_1 dataset_src=huggingface level=1 num_workers=50 server_type=deepseek model_name=deepseek-chat temperature=0
+### Performance Baselines
 
-# 2. Evaluate on all generated kernels in runs/{run_name} directory
-python3 scripts/eval_from_generations.py run_name=test_hf_level_1 dataset_src=local level=1 num_gpu_devices=8 timeout=300
+Generate hardware-specific baselines:
 
-# If you like to speedup evaluation, you can use parallelize compilation on CPUs before getting to evluation on GPUs
-# add build_cache=True and num_cpu_workers=<num_cpu_workers> to the command
+```bash
+python scripts/generate_baseline_time.py \
+  level=1 \
+  hardware_name="MI300X" \
+  num_runs=100
 ```
-### Analyze the eval results to compute Benchmark Performance
-We provide `scripts/benchmark_eval_analysis.py` to analyze the eval results to compute success rate, timing metric, and overall benchmark performance  `fast_p`. 
 
-```
-python3 scripts/benchmark_eval_analysis.py run_name=test_hf_level_1 level=1 hardware=L40S_matx3 baseline=baseline_time_torch
-```
-If you are using a different hardware, you can generate the baseline time with `scripts/generate_baseline_time.py` script.
-We provide some reference baseline times a variety of NVIDIA GPUs across generations in `results/timing`, but we recommend you to generate your own baseline time for more accurate results (cluster power, software version, all affects timing result). See `results/timing/README.md` for more details.
+We provide reference baseline times for various NVIDIA GPUs in `results/timing`, but recommend generating your own for accuracy.
 
 ### Multi-Turn Framework
-We have also releaed the test-time framework [Caesar](https://github.com/simonguozirui/caesar) that are used in the multi-turn / iterative refinement experiments in our paper. You can use or modify this framework for high-throughput test-time scaling (both sequential and parallel) targeting KernelBench problems. 
 
-## 🛣️ Upcoming Roadmap
-- [ ] Triton Variant (To be merged)
-- [ ] Easy to use CoLab Notebook Example
-- [ ] Push button flow on Modal / Cloud Provider 
-- [ ] Integrate with more frameworks, such as [ThunderKittens](https://github.com/HazyResearch/ThunderKittens)
-- [ ] Add backward pass
-- [ ] Integrate with toolchains such as NCU
-See Issues for the ongoing roadmap and directions.
+For iterative refinement experiments, check out [Caesar](https://github.com/simonguozirui/caesar) - a test-time framework for high-throughput sequential and parallel refinement targeting KernelBench problems.
 
+### Modal Support
 
+If you don't have local GPU access, set up [Modal](https://modal.com/):
+
+```bash
+modal token new
+python scripts/generate_and_eval_single_sample_modal.py \
+  dataset_src="huggingface" \
+  level=1 \
+  problem_id=0
+```
+
+## 🐛 Troubleshooting
+
+### Known Issues on AMD
+
+Some problems may cause GPU crashes on AMD MI300X:
+- Level 1, Problem 42: Max_Pooling_2D
+- Level 2, Problem 7: Conv3d_ReLU_LeakyReLU_GELU_Sigmoid_BiasAdd
+
+Ensure environment variables are properly set to prevent core dumps.
+
+### CUDA Memory Issues
+
+For Triton kernels with shared memory issues, use:
+```bash
+python scripts/simple_eval_server_cuda_fix.py
+```
+
+## 🔬 Results
+
+*[Results section to be added after experiments complete]*
+
+## 🛣️ Roadmap
+
+- [x] Triton Variant (Thanks to Meta AI!)
+- [ ] Easy-to-use CoLab Notebook Example
+- [ ] Push-button flow on Modal/Cloud Provider
+- [ ] Integration with ThunderKittens
+- [ ] Backward pass support
+- [ ] NCU toolchain integration
 
 ## 🔍 Known Usage
-- [NVIDIA](https://developer.nvidia.com/blog/automating-gpu-kernel-generation-with-deepseek-r1-and-inference-time-scaling/) - Automating GPU Kernel Generation with DeepSeek-R1 and Inference Time Scaling
+
+- [NVIDIA](https://developer.nvidia.com/blog/automating-gpu-kernel-generation-with-deepseek-r1-and-inference-time-scaling/) - Automating GPU Kernel Generation
 - [METR](https://metr.org/blog/2025-02-14-measuring-automated-kernel-engineering/) - Measuring Automated Kernel Engineering
 - [Sakana AI](https://sakana.ai/ai-cuda-engineer/) - AI Cuda Engineer
-- [Project Popcorn](https://www.youtube.com/watch?v=mdDVkBeFy9A) - Triton Support for KernelBench, Data Scaling + SFT'd Kernel LLM
+- [Project Popcorn](https://www.youtube.com/watch?v=mdDVkBeFy9A) - Triton Support for KernelBench
 - [Kevin](https://cognition.ai/blog/kevin-32b) - Kevin-32B: Multi-Turn RL for Writing CUDA Kernels
 - [Simple Test-Time Search](https://scalingintelligence.stanford.edu/blogs/fastkernels/) - by @anneouyang
 
-If you are using KernelBench, we love to hear more about it!
+## 📄 License
 
-## 🪪 License
-MIT. Check `LICENSE.md` for more details.
+MIT - See LICENSE file for details
 
+## 📚 Citation
 
-## Citation
 ```bibtex
 @misc{ouyang2025kernelbenchllmswriteefficient,
       title={KernelBench: Can LLMs Write Efficient GPU Kernels?}, 
@@ -151,3 +442,9 @@ MIT. Check `LICENSE.md` for more details.
       url={https://arxiv.org/abs/2502.10517}, 
 }
 ```
+
+## 📧 Contact
+
+For questions about KBenchEval:
+- Issue Tracker: [GitHub Issues](https://github.com/RLsys-Foundation/KBenchEval/issues)
+- Original KernelBench: [ScalingIntelligence/KernelBench](https://github.com/ScalingIntelligence/KernelBench)
