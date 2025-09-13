@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Kernel Code Generation Agent Training Script - Qwen3-8B
-# This script trains Qwen3-8B to generate optimized CUDA kernels
+# Kernel Code Generation Agent Training Script - Qwen3-8B-SFT
+# This script trains Qwen3-8B-slime-kernelbook-sft to generate optimized CUDA kernels
 
 # Clean up previous runs
 pkill -9 sglang
@@ -26,11 +26,11 @@ export PP_SIZE=1    # Pipeline parallelism
 export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches 4 GPUs)
 
 # Model paths - Updated for Qwen3-8B
-PROJECT_ROOT=/root
-export HF_MODEL_PATH=/root/Qwen3-8B
-export MCORE_MODEL_PATH=/root/Qwen3-8B_torch_dist
-export PROMPT_DATA=/root/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=/root/Qwen3-8B_torch_dist_save
+PROJECT_ROOT=/workspace
+export HF_MODEL_PATH=/workspace/models/Qwen3-8B
+export MCORE_MODEL_PATH=/workspace/models/Qwen3-8B-Kernelbook-SFT-filtered
+export PROMPT_DATA=/workspace/TritonForge/SMART/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
+export MCORE_MODEL_PATH_SAVE=/worksapce/models/Qwen3-8B-Kernelbook-SFT-filtered_save
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
@@ -58,26 +58,35 @@ MODEL_ARGS=(
 )
 
 CKPT_ARGS=(
-   --hf-checkpoint ${HF_MODEL_PATH}
-   --ref-load ${MCORE_MODEL_PATH}
-   --load ${MCORE_MODEL_PATH_SAVE}
-   --save-interval 20  # Save more frequently for kernel training
-   --save ${MCORE_MODEL_PATH_SAVE}
+  # Load both actor and reference from your SFT checkpoint
+  --load ${MCORE_MODEL_PATH}
+  --ref-load ${MCORE_MODEL_PATH}
+
+  # Save RL-updated weights here
+  --save ${MCORE_MODEL_PATH_SAVE}
+  --save-interval 200
+
+  # Load weights only (avoid stale optimizer/RNG states)
+  --no-load-optim
+  --no-load-rng
+
+  # Optional fallback: if --load isn't found, try HF path
+  --hf-checkpoint ${HF_MODEL_PATH}
 )
 
 ROLLOUT_ARGS=(
    --rollout-function-path slime.rollout.agent_rollout.generate_rollout
-   --rm-type kernelbench_multiturn
+   --rm-type kernelbench
    --prompt-data ${PROMPT_DATA}
    --input-key prompt
    --label-key label
    --num-rollout 1000
-   --rollout-batch-size 8  # Reduced for faster debugging and lower memory usage
-   --rollout-max-response-len 11264  # Extended for multi-turn context accumulation
-   --rollout-temperature 1.0  # Higher for code diversity
+   --rollout-batch-size 4  # Reduced for faster debugging and lower memory usage
+   --rollout-max-response-len 8192  # Extended for multi-turn context accumulation
+   --rollout-temperature 0.9  # Higher for code diversity
    --rollout-shuffle
-   --n-samples-per-prompt 8  # Generate 4 responses per prompt for pass@4
-   --global-batch-size 64  # Reduced from 64 to 8 for faster training iterations
+   --n-samples-per-prompt 8  # Generate 8 responses per prompt for pass@8
+   --global-batch-size 32  
    --balance-data
    --max-turns 3  # Multi-turn dialogue horizon
    --gamma 0.4  # Discount factor for aggregated return
@@ -107,7 +116,7 @@ PERF_ARGS=(
    # --micro-batch-size 1
    # --ref-micro-batch-size 1
    --use-dynamic-batch-size
-   --max-tokens-per-gpu 3072
+   --max-tokens-per-gpu 4096
 )
 
 GRPO_ARGS=(
@@ -123,7 +132,7 @@ GRPO_ARGS=(
 
 OPTIMIZER_ARGS=(
    --optimizer adam
-   --lr 5e-7
+   --lr 1e-6
    --lr-decay-style constant
    --weight-decay 0.1
    --adam-beta1 0.9
@@ -136,8 +145,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B
-   --wandb-group Qwen3-8B-KBench-MultiTurn
+   --wandb-project TF-NV-singleturn-qwen3-8B-sft-filtered
+   --wandb-group TF-Qwen3-8B-SFT-KBench-SingleTurn-Filtered
    --wandb-key ${WANDB_KEY}
 )
 
@@ -185,4 +194,4 @@ ray job submit --address="http://127.0.0.1:8265" \
    --sglang-log-level error \
    --input-key prompt \
    --log-passrate \
-   --rollout-task-type kernelbench_multiturn
+   --rollout-task-type kernelbench
