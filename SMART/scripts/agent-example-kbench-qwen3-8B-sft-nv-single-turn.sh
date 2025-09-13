@@ -30,7 +30,7 @@ PROJECT_ROOT=/workspace
 export HF_MODEL_PATH=/workspace/models/Qwen3-8B
 export MCORE_MODEL_PATH=/workspace/models/Qwen3-8B-Kernelbook-SFT-filtered
 export PROMPT_DATA=/workspace/TritonForge/SMART/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=/worksapce/models/Qwen3-8B-Kernelbook-SFT-filtered_save
+export MCORE_MODEL_PATH_SAVE=/workspace/models/Qwen3-8B-Kernelbook-SFT-filtered_save
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
