@@ -2,6 +2,9 @@
 
 set -e
 
+# Ensure logs directory exists
+mkdir -p /workspace/TritonForge/SMART/logs
+
 SESSION_NAME="slime_qwen3_sft_multi_turn_run"
 WINDOW_1="slime"
 WINDOW_2="buffer"
