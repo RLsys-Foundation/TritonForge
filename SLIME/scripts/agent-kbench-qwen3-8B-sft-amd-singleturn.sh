@@ -19,10 +19,10 @@ set -ex
 SLIME_DIR="/root/TritonForge/SLIME"
 export SLIME_DIR=$SLIME_DIR
 
-MODEL_DIR="/home/jinpan12/workspace/models"
+MODEL_DIR="/root"
 export MODEL_DIR=$MODEL_DIR
 
-DATA_DIR="/home/jinpan12/workspace/slime/data"
+DATA_DIR="/root/TritonForge/SLIME/data"
 export DATA_DIR=$DATA_DIR
 ####################
 
@@ -41,7 +41,7 @@ export HF_MODEL_PATH=${MODEL_DIR}/Qwen3-8B
 # Megatron checkpoint is the fine-tuned SFT model with trained weights
 export MCORE_MODEL_PATH=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-filtered
 export PROMPT_DATA=${DATA_DIR}/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-singleturn-debug
+export MCORE_MODEL_PATH_SAVE=${MODEL_DIR}/Qwen3-8B-Kernelbook-SFT-singleturn
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
@@ -99,7 +99,7 @@ ROLLOUT_ARGS=(
    --num-rollout 1000
    --rollout-batch-size 4  # REDUCED from 4 for debugging and memory safety
    --rollout-max-response-len 8192
-   --rollout-temperature 0.8
+   --rollout-temperature 1.0
    --rollout-shuffle
    --n-samples-per-prompt 8  # Keep at 8 to maintain global-batch-size = 2 * 8 = 16
    --global-batch-size 32  # REDUCED from 32 for debugging
@@ -160,8 +160,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-singleturn-qwen3-8B-sft-debug
-   --wandb-group Qwen3-8B-SFT-KBench-SingleTurn-AMD-Debug
+   --wandb-project TritonForge-singleturn-qwen3-8B-sft-filtered-amd-single-turn
+   --wandb-group Qwen3-8B-SFT-KBench-SingleTurn-AMD-MI300X
    --wandb-key ${WANDB_KEY}
 )
 

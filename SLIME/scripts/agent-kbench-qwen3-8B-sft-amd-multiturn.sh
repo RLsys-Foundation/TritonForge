@@ -16,13 +16,13 @@ pkill -9 python
 set -ex
 
 ### AMD Support ###
-SLIME_DIR="/home/jinpan12/workspace/slime"
+SLIME_DIR="/root/TritonForge/SLIME"
 export SLIME_DIR=$SLIME_DIR
 
-MODEL_DIR="/home/jinpan12/workspace/models"
+MODEL_DIR="/root"
 export MODEL_DIR=$MODEL_DIR
 
-DATA_DIR="/home/jinpan12/workspace/slime/data"
+DATA_DIR="/root/TritonForge/SLIME/data"
 export DATA_DIR=$DATA_DIR
 ####################
 
@@ -101,7 +101,7 @@ ROLLOUT_ARGS=(
    --num-rollout 1000
    --rollout-batch-size 4  # Further reduced for stability
    --rollout-max-response-len 8192
-   --rollout-temperature 0.8
+   --rollout-temperature 1.0
    --rollout-shuffle
    --n-samples-per-prompt 8
    --global-batch-size 32  # Reduced to match smaller rollout batch
@@ -161,7 +161,7 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project slime-multiturn-qwen3-8B-sft-filtered-amd-mulit-turn-debug
+   --wandb-project TritonForge-multiturn-qwen3-8B-sft-filtered-amd-mulit-turn
    --wandb-group Qwen3-8B-SFT-KBench-MultiTurn-AMD-MI300X
    --wandb-key ${WANDB_KEY}
 )

@@ -35,19 +35,19 @@ export HIP_ENABLE_COREDUMP=0
 # Don't restrict HIP_VISIBLE_DEVICES here - let the script see all GPUs
 # The rollout script will use --rollout-num-gpus 2 to limit usage
 tmux new-session -d -s $SESSION_NAME -n $WINDOW_1
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "cd /home/jinpan12/workspace/slime" C-m
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "bash ./scripts/agent-kbench-qwen3-8B-sft-amd-debug-rollout.sh |& tee /home/jinpan12/workspace/slime/logs/slime_qwen3_sft_amd_debug_rollout.log" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "cd /root/TritonForge/SLIME" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_1} "bash ./scripts/agent-kbench-qwen3-8B-sft-amd-debug-rollout.sh |& tee /root/TritonForge/SLIME/logs/slime_qwen3_sft_amd_debug_rollout.log" C-m
 
 # Window 2: Rollout buffer
 tmux new-window -t $SESSION_NAME -n $WINDOW_2
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_2} "sleep 30" C-m
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_2} "cd /home/jinpan12/workspace/slime/slime_plugins/rollout_buffer" C-m
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_2} "python buffer.py |& tee /home/jinpan12/workspace/slime/logs/buffer_qwen3_sft_amd_debug_rollout.log" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_2} "cd /root/TritonForge/SLIME/slime_plugins/rollout_buffer" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_2} "python buffer.py |& tee /root/TritonForge/SLIME/logs/buffer_qwen3_sft_amd_debug_rollout.log" C-m
 
 # Window 3: ROBUST Evaluation server (using separate GPUs)
 tmux new-window -t $SESSION_NAME -n $WINDOW_3
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "sleep 30" C-m
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "cd /home/jinpan12/workspace/KernelBench" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "cd /root/TritonForge/KBenchEval/kernelbench_amd_tools" C-m
 
 # Use HIP_VISIBLE_DEVICES for AMD GPUs (using GPUs 2,3 for evaluation)
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "export HIP_VISIBLE_DEVICES='2,3'" C-m
@@ -60,10 +60,10 @@ tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "export HIP_ENABLE_COREDUMP=0" C-m
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "export AMD_LOG_LEVEL=0" C-m
 
 # Run ROBUST evaluation server with enhanced memory fault handling
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "python scripts/eval_server_subprocess_robust.py |& tee /home/jinpan12/workspace/slime/logs/eval_server_qwen3_sft_amd_debug_rollout.log" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "python scripts/eval_server_subprocess_robust.py |& tee /root/TritonForge/SLIME/logs/eval_server_qwen3_sft_amd_debug_rollout.log" C-m
 
 # Create logs directory if it doesn't exist
-mkdir -p /home/jinpan12/workspace/slime/logs
+mkdir -p /root/TritonForge/SLIME/logs
 
 echo "============================================"
 echo "AMD MI300X DEBUG ROLLOUT-ONLY MODE"
@@ -87,9 +87,9 @@ echo "  - Eval Server: GPUs 2-3 (via HIP_VISIBLE_DEVICES)"
 echo "  - Total: 4+ GPUs available"
 echo ""
 echo "Logs:"
-echo "  Rollout:  /home/jinpan12/workspace/slime/logs/slime_qwen3_sft_amd_debug_rollout.log"
-echo "  Buffer:   /home/jinpan12/workspace/slime/logs/buffer_qwen3_sft_amd_debug_rollout.log"
-echo "  Eval:     /home/jinpan12/workspace/slime/logs/eval_server_qwen3_sft_amd_debug_rollout.log"
+echo "  Rollout:  /root/TritonForge/SLIME/logs/slime_qwen3_sft_amd_debug_rollout.log"
+echo "  Buffer:   /root/TritonForge/SLIME/logs/buffer_qwen3_sft_amd_debug_rollout.log"
+echo "  Eval:     /root/TritonForge/SLIME/logs/eval_server_qwen3_sft_amd_debug_rollout.log"
 echo ""
 echo "Monitor server health:"
 echo "  curl http://localhost:18188/health"
