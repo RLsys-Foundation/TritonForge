@@ -523,12 +523,33 @@ Join our community effort to democratize GPU kernel optimization! See our [Contr
 
 ## 🙏 Acknowledgments
 
+### Core Contributors
+
+We extend our deepest gratitude to the individuals whose dedication and expertise made TritonForge possible:
+
+#### 🏗️ Framework Architecture
+- **Zilin Zhu** and **Chengxing Xie** - For their foundational work on the SLIME framework and the entire async slime_plugins system that enables customizable rollout and reward mechanisms. Without their RL framework, TritonForge would not have been possible.
+
+#### 🔗 System Integration
+- **Xiang Long** - For his crucial collaboration in bridging SLIME with KernelBench evaluation through an innovative server-based architecture, enabling seamless integration between training and evaluation pipelines.
+
+#### 🔄 Multi-Turn Innovation
+- **Kexun Zhang** - For pioneering work on implementing multi-turn refinement methods and generously providing Claude API access for our SFT data generation pipeline, significantly enhancing our training data quality.
+
+#### 💡 Research Insights
+- **Junrong Lin** and **Haoran Wang** - For their valuable insights and contributions to the system design and optimization strategies that shaped TritonForge's architecture.
+
+#### 🚀 AMD Platform Support
+- **Yusheng Su** (AMD Mentor), **Yuzhen Zhou**, and **Jiajun Li** - For their instrumental support in enabling AMD MI300X compatibility and ROCm optimization. Their expertise was critical in making TritonForge a truly cross-platform solution.
+
+### Project Dependencies
+
 <div align="center">
 
 | Project | Contribution |
 |---------|-------------|
 | **[KernelBench](https://github.com/ScalingIntelligence/KernelBench)** | The foundational benchmark framework that KBenchEval is built upon |
-| **[SLIME](https://github.com/THUDM/slime)** | The foundational RL framework that SMART is built upon |
+| **[SLIME](https://github.com/THUDM/slime)** | The foundational RL framework that our training system is built upon |
 | **[Meta AI](https://ai.meta.com/)** | Laying the foundation for Triton backend support through [PR #35](https://github.com/ScalingIntelligence/KernelBench/pull/35) |
 | **[GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook)** | 18.2k curated PyTorch-to-Triton training pairs for SFT |
 | **[facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM)** | Additional high-quality SFT dataset for kernel generation |
