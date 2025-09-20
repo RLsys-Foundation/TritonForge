@@ -7,9 +7,9 @@
 ### 🔥 Forging Optimal GPU Kernels through SFT + RL
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![Python](https://img.shields.io/badge/Python-3.10%2B-green.svg)](https://www.python.org/)
-[![CUDA](https://img.shields.io/badge/CUDA-11.8%2B-76B900.svg?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
-[![ROCm](https://img.shields.io/badge/ROCm-5.7%2B-red.svg?logo=amd)](https://www.amd.com/en/products/software/rocm.html)
+[![Python](https://img.shields.io/badge/Python-3.12%2B-green.svg)](https://www.python.org/)
+[![CUDA](https://img.shields.io/badge/CUDA-12.6%2B-76B900.svg?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
+[![ROCm](https://img.shields.io/badge/ROCm-6.3%2B-red.svg?logo=amd)](https://www.amd.com/en/products/software/rocm.html)
 
 **Transform PyTorch Operations into Optimized GPU Kernels with LLMs**
 
