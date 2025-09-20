@@ -21,7 +21,7 @@ export SGLANG_API_KEY="local-key"
 export OPENAI_API_KEY="dummy-key"  # Required by OpenAI client library
 
 # Set Python path
-export PYTHONPATH=/workspace/KernelBench:$PYTHONPATH
+export PYTHONPATH=/root/TritonForge/KBenchEval/kernelbench_amd_tools/:$PYTHONPATH
 
 # AMD optimizations
 export HSA_ENABLE_SDMA=0
@@ -33,7 +33,7 @@ export AMD_LOG_LEVEL=0
 export ROCM_DISABLE_CRASH_DUMP=1
 export HIP_ENABLE_COREDUMP=0
 
-cd /workspace/KernelBench
+cd /root/TritonForge/KBenchEval/kernelbench_amd_tools/
 
 # Check SGLang server
 echo "Checking SGLang server..."
@@ -91,5 +91,5 @@ fi
 
 echo ""
 echo "If successful, run full evaluation with:"
-echo "  cd /workspace/KernelBench/kernelbench_amd_tools/launchers"
+echo "  cd /root/TritonForge/KBenchEval/kernelbench_amd_tools/launchers"
 echo "  ./start_evaluation.sh"

@@ -16,7 +16,7 @@ pkill -9 python
 set -ex
 
 ### AMD Support ###
-SLIME_DIR="/home/jinpan12/workspace/slime"
+SLIME_DIR="/root/TritonForge/SLIME"
 export SLIME_DIR=$SLIME_DIR
 
 MODEL_DIR="/home/jinpan12/workspace/models"

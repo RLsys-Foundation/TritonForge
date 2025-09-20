@@ -5,7 +5,7 @@ Test subprocess isolation for problem 47 which caused memory fault
 
 import sys
 import os
-sys.path.insert(0, '/workspace/KernelBench')
+sys.path.insert(0, '/root/TritonForge/KBenchEval/kernelbench_amd_tools/')
 
 from run_qwen3_evaluation_robust import evaluate_kernel_subprocess
 
