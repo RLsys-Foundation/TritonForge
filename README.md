@@ -43,7 +43,7 @@ We believe in complete transparency and community collaboration. **Everything is
 
 - **📚 Training Data**: Custom-curated datasets ([GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook))
 - **🤖 Model Checkpoints**: All intermediate and final models ([HuggingFace](https://huggingface.co/JinnP))
-- **🏗️ Training Framework**: Complete SLIME-based RL implementation
+- **🏗️ Training Framework**: Complete SLIME RL implementation (fixed version with improvements)
 - **🐳 Environment Setup**: Docker images and configurations for both NVIDIA and AMD
 - **📖 Training Recipes**: Detailed scripts and hyperparameters for reproduction
 
@@ -54,12 +54,12 @@ We invite the community to join us in advancing automated kernel generation toge
 <tr>
 <td align="center" width="50%">
 
-### 🧠 SMART
+### 🧠 SLIME
 **Reinforcement Learning Framework**
 
-Built on [SLIME](https://github.com/THUDM/slime), enabling multi-turn iterative kernel improvement through compilation feedback and performance metrics
+**Note: This is a fixed and improved version of the original [SLIME](https://github.com/THUDM/slime) framework.** We believe in being honest and transparent - this is essentially SLIME with bug fixes and optimizations that enable multi-turn iterative kernel improvement through compilation feedback and performance metrics.
 
-[Learn More →](SMART/)
+[Learn More →](SLIME/)
 
 </td>
 <td align="center" width="50%">
@@ -139,10 +139,10 @@ pip install --upgrade pip
 pip install -e .
 ```
 
-#### 4. Setup SMART
+#### 4. Setup SLIME
 
 ```bash
-cd ../SMART
+cd ../SLIME
 pip install -e .
 ```
 
@@ -208,9 +208,9 @@ docker run -it \
 #### 3. Clone Repository
 
 ```bash
-# Clone SMART (SLIME fork)
-git clone git@github.com:SwordFaith/slime.git SMART
-cd SMART
+# Clone SLIME (fixed version)
+git clone git@github.com:SwordFaith/slime.git SLIME
+cd SLIME
 git checkout dev-Azure
 
 # Clone KBenchEval  
@@ -258,10 +258,10 @@ pip install together google-generativeai
 pip install -e .
 ```
 
-#### 6. Setup SMART
+#### 6. Setup SLIME
 
 ```bash
-cd ../SMART
+cd ../SLIME
 pip install -e .
 ```
 
@@ -308,7 +308,7 @@ The resulting model is available at [JinnP/Qwen3-8B-Kernelbook-SFT-filtered](htt
 
 ### Stage 2: Reinforcement Learning (RL)
 
-We then apply reinforcement learning using SMART to further improve the model's kernel generation capabilities:
+We then apply reinforcement learning using SLIME (our fixed and improved version) to further improve the model's kernel generation capabilities:
 
 <div align="center">
 
@@ -379,7 +379,7 @@ python scripts/generate_and_eval_single_sample.py \
 **NVIDIA**
 
 ```bash
-cd SMART
+cd SLIME
 # Multi-turn kernel generation training
 bash scripts/run_agent_kbench_qwen3_8B_sft_fixed.sh
 ```
@@ -413,7 +413,7 @@ python kernelbench_amd_tools/scripts/run_qwen3_evaluation_robust.py --levels 1,2
 
 ```
 TritonForge/
-├── 📁 SMART/                      # RL training framework (based on SLIME)
+├── 📁 SLIME/                      # RL training framework (fixed version of SLIME)
 │   ├── slime/                     # Core SLIME framework
 │   ├── slime_plugins/             # Custom generators and reward functions
 │   └── scripts/                   # Training launch scripts

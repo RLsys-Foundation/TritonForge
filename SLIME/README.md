@@ -1,10 +1,12 @@
-# SMART (SLIME-based Multi-turn Adaptive Reinforcement Training)
+# SLIME (Scalable Language model Improvement by Merit-based Exploration)
 
-**SMART** is an advanced reinforcement learning framework for training Large Language Models to generate optimized GPU kernels. Built on top of [SLIME (Scalable Language model Improvement by Merit-based Exploration)](https://github.com/THUDM/slime), SMART enables multi-turn iterative kernel improvement through compilation feedback and performance metrics.
+**Honest Disclosure:** This is a fixed and improved version of the original [SLIME](https://github.com/THUDM/slime) framework. We believe in transparency - this repository contains SLIME with essential bug fixes, optimizations, and enhancements that make it production-ready for GPU kernel generation tasks. All credit for the foundational framework goes to the original SLIME authors.
+
+**SLIME** is an advanced reinforcement learning framework for training Large Language Models to generate optimized GPU kernels, enabling multi-turn iterative kernel improvement through compilation feedback and performance metrics.
 
 ## 🎯 Overview
 
-SMART extends SLIME's capabilities to specifically target GPU kernel generation, implementing:
+This fixed version of SLIME includes improvements and optimizations specifically for GPU kernel generation, implementing:
 
 - **🔄 Multi-Turn Refinement**: Iteratively improve kernels through up to 3 turns based on compilation errors and performance feedback
 - **📊 Custom Reward Functions**: Tailored rewards for compilation success, functional correctness, and performance speedup
@@ -13,7 +15,7 @@ SMART extends SLIME's capabilities to specifically target GPU kernel generation,
 
 ## 🏗️ Architecture
 
-SMART leverages SLIME's three-component architecture:
+SLIME leverages a three-component architecture:
 
 1. **[Megatron-LM](https://github.com/NVIDIA/Megatron-LM)**: Distributed training with tensor/pipeline/data parallelism
 2. **[SGLang](https://github.com/sgl-project/sglang)**: High-performance inference serving for rollout generation
@@ -22,14 +24,14 @@ SMART leverages SLIME's three-component architecture:
 ### Core Components
 
 ```
-SMART/
+SLIME/
 ├── slime/                              # Core SLIME framework
 │   ├── backends/                       # Training and inference backends
 │   │   ├── megatron_utils/            # Distributed training utilities
 │   │   └── sglang_utils/              # Inference serving utilities
 │   ├── ray/                           # Distributed orchestration
 │   └── rollout/                       # Rollout and reward computation
-├── slime_plugins/                      # SMART-specific extensions
+├── slime_plugins/                      # Task-specific extensions
 │   ├── rollout_buffer/                # Custom kernel generation
 │   │   ├── generator/                 # Kernel generators
 │   │   │   ├── kernel_generator.py              # Single-turn generation
@@ -65,8 +67,8 @@ docker run --rm --gpus all --ipc=host --shm-size=128g \
   -v $HOME:$HOME \
   -it zhuzilin/slime:20250706-v2 /bin/bash
 
-# Install SMART
-cd SMART
+# Install SLIME
+cd SLIME
 pip install -e .
 ```
 
@@ -88,8 +90,8 @@ docker run -it \
   /bin/bash
 
 # Clone and setup
-git clone git@github.com:SwordFaith/slime.git SMART
-cd SMART
+git clone git@github.com:SwordFaith/slime.git SLIME
+cd SLIME
 git checkout dev-Azure
 pip install -e .
 
@@ -186,7 +188,7 @@ The multi-turn scripts automatically:
 
 ### Custom Rollout Functions
 
-SMART supports custom rollout and reward functions:
+SLIME supports custom rollout and reward functions:
 
 ```python
 # In slime_plugins/rollout_buffer/generator/kernelbench_config.py
@@ -343,7 +345,7 @@ We welcome contributions! Areas of particular interest:
 
 ## 📚 References
 
-- **SLIME Framework**: [THUDM/slime](https://github.com/THUDM/slime) - The foundational RL framework
+- **Original SLIME Framework**: [THUDM/slime](https://github.com/THUDM/slime) - The original framework this is based on
 - **KernelLLM Dataset**: [facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM) - SFT training data
 - **Trained Models**: [JinnP/Qwen3-8B-Kernelbook-SFT-filtered](https://huggingface.co/JinnP/Qwen3-8B-Kernelbook-SFT-filtered)
 
@@ -353,6 +355,6 @@ Apache 2.0 - See LICENSE file for details
 
 ## 📧 Contact
 
-For questions about SMART:
-- Issue Tracker: [GitHub Issues](https://github.com/RLsys-Foundation/SMART/issues)
+For questions about this fixed version of SLIME:
+- Issue Tracker: [GitHub Issues](https://github.com/RLsys-Foundation/TritonForge/issues)
 - Original SLIME Framework: [THUDM/slime](https://github.com/THUDM/slime)
