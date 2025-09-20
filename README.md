@@ -84,11 +84,11 @@ Based on [ScalingIntelligence/KernelBench](https://github.com/ScalingIntelligenc
 
 | Requirement | NVIDIA | AMD |
 |------------|--------|-----|
-| **GPU** | A100/H100 | MI300X |
-| **Memory** | 80GB+ | 80GB+ |
+| **Verified GPU** | H100 | MI300X |
+| **Memory** | 80GB | 192GB |
 | **Docker** | ✅ Required | ✅ Required |
 | **Python** | 3.10+ | 3.10+ |
-| **CUDA/ROCm** | 11.8+ | 5.7+ |
+| **CUDA/ROCm** | 12.6.1 | 6.3.4 |
 
 </div>
 
@@ -170,18 +170,7 @@ huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir models/Q
 <details id="amd-setup">
 <summary><b>📕 AMD Setup</b></summary>
 
-#### 1. Allocate Compute Node (Azure)
-
-```bash
-tmux new-session -d -s kernel_agent_node_0
-
-salloc --nodes=1 --exclusive --gres=gpu:8 \
-          --time=120-00:00:00 \
-          --nodelist=pdfc-aig-00001N \
-          --job-name=Kernel-Agent
-```
-
-#### 2. Launch Docker Container
+#### 1. Launch Docker Container
 
 ```bash
 docker pull rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch_apex_vim
@@ -189,41 +178,44 @@ docker pull rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_s
 docker run -it \
   --device /dev/dri \
   --device /dev/kfd \
-  -p 8265:8265 \
   --group-add video \
   --cap-add SYS_PTRACE \
   --security-opt seccomp=unconfined \
   --privileged \
-  -v $HOME/.ssh:/root/.ssh \
-  -v $HOME:$HOME \
   --shm-size 128G \
-  --name slime_dev \
   --ulimit memlock=-1 \
   --ulimit stack=67108864 \
-  -w $PWD \
+  -v "$HOME/.ssh:/root/.ssh:ro" \
+  -v "$HOME:$HOME" \
+  -e HF_HOME="$HOME/.cache/huggingface" \
+  -e TRANSFORMERS_CACHE="$HOME/.cache/huggingface" \
+  -e XDG_CACHE_HOME="$HOME/.cache" \
+  -w "$PWD" \
+  -p 127.0.0.1:18265:8265 \
+  --name slime_dev \
   rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch_apex_vim \
   /bin/bash
 ```
 
-#### 3. Clone Repository
+#### 2. Clone Repository
 
 ```bash
-# Clone SLIME (fixed version)
-git clone git@github.com:SwordFaith/slime.git SLIME
-cd SLIME
-git checkout dev-Azure
+git clone https://github.com/RLsys-Foundation/TritonForge.git
+cd TritonForge
+```
 
-# Clone KBenchEval  
-cd ..
-git clone git@github.com:SwordFaith/KernelBench.git KBenchEval
-cd KBenchEval
-git checkout AMD-ver
+#### 3. Setup SLIME
+
+```bash
+cd ../SLIME
+pip install -e .
 ```
 
 #### 4. Set AMD Environment Variables
 
 ```bash
 # Set AMD environment variables
+# gfx942 is especially for MI300X
 export ROCM_HOME=/opt/rocm
 export HIP_PLATFORM=amd
 export PYTORCH_ROCM_ARCH=gfx942
@@ -244,38 +236,31 @@ export HSA_TOOLS_LIB=/opt/rocm/lib/librocm-debug-agent.so.2:0
 export GPU_MAX_HW_QUEUES=1
 ```
 
-#### 5. Setup KBenchEval
+#### 5. Set up KBenchEval for MI300X
 
 ```bash
 cd KBenchEval
 
-# Install additional dependencies
-pip install pydra_config==0.0.15
+# need to install missing packages
+pip install pydra_config==0.0.15 # May need to do something fix for pydra
 cd /usr/local/lib/python3.12/dist-packages && ln -sf pydra_config pydra
-cd -
+pip install together
+pip install google-generativeai
 
-pip install together google-generativeai
+# No more virtual environment here cause we're just using Python path in the docker
+# Install dependencies
+cd /root/TritonForge/KBenchEval
 pip install -e .
 ```
 
-#### 6. Setup SLIME
+#### 6. Download Models
 
 ```bash
-cd ../SLIME
-pip install -e .
-```
-
-#### 7. Download Models
-
-```bash
-# Create models directory
-mkdir -p models
-
 # Download the same models as NVIDIA setup
-huggingface-cli download JinnP/Qwen3-8B-Kernelbook-SFT-HF --local-dir models/Qwen3-8B-Kernelbook-SFT-HF
-huggingface-cli download JinnP/Qwen3-8B-Kernelbook-SFT-filtered --local-dir models/Qwen3-8B-Kernelbook-SFT-filtered
-huggingface-cli download Qwen/Qwen3-8B --local-dir models/Qwen3-8B
-huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir models/Qwen3-8B_torch_dist
+huggingface-cli download JinnP/Qwen3-8B-Kernelbook-SFT-HF --local-dir /root/Qwen3-8B-Kernelbook-SFT-HF
+huggingface-cli download JinnP/Qwen3-8B-Kernelbook-SFT-filtered --local-dir /root/Qwen3-8B-Kernelbook-SFT-filtered
+huggingface-cli download Qwen/Qwen3-8B --local-dir /root/Qwen3-8B
+huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir /root/Qwen3-8B_torch_dist
 ```
 
 </details>
