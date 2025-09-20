@@ -21,7 +21,7 @@ from openai import OpenAI
 import copy
 
 # Add paths
-sys.path.insert(0, '/home/jinpan12/workspace/KernelBench')
+sys.path.insert(0, '/root/TritonForge/KBenchEval/kernelbench_amd_tools/')
 
 from src.eval import eval_kernel_against_ref
 from src.dataset import construct_kernelbench_dataset
@@ -32,7 +32,7 @@ os.environ['OPENAI_API_KEY'] = 'dummy-key'
 os.environ['ROCM_HOME'] = '/opt/rocm'
 os.environ['HIP_PLATFORM'] = 'amd'
 os.environ['PYTORCH_ROCM_ARCH'] = 'gfx942'
-os.environ['PYTHONPATH'] = '/home/jinpan12/workspace/KernelBench:' + os.environ.get('PYTHONPATH', '')
+os.environ['PYTHONPATH'] = '/root/TritonForge/KBenchEval/kernelbench_amd_tools/:' + os.environ.get('PYTHONPATH', '')
 
 # Disable GPU core dumps to prevent crashes
 os.environ['HSA_ENABLE_COREDUMP'] = '0'
@@ -81,7 +81,7 @@ import os
 import base64
 
 # Add paths
-sys.path.insert(0, '/home/jinpan12/workspace/KernelBench')
+sys.path.insert(0, '/root/TritonForge/KBenchEval/kernelbench_amd_tools/')
 
 # Set environment
 os.environ['ROCM_HOME'] = '/opt/rocm'
@@ -363,7 +363,7 @@ class RobustMultiTurnQwen3Evaluator:
         self.use_native_template = use_native_template
         
         # Setup directories
-        self.results_dir = f"/home/jinpan12/workspace/KernelBench/runs/{run_name}"
+        self.results_dir = f"/root/TritonForge/KBenchEval/kernelbench_amd_tools/runs/{run_name}"
         self.report_dir = f"{self.results_dir}/reports"
         self.kernels_dir = f"{self.results_dir}/generated_kernels"
         self.logs_dir = f"{self.results_dir}/logs"
@@ -400,7 +400,7 @@ class RobustMultiTurnQwen3Evaluator:
             "metadata": {
                 "run_name": run_name,
                 "start_time": datetime.now().isoformat(),
-                "model": "Qwen/Qwen3-8B",
+                "model": "Qwen/Qwen3-8B-fined-tuned",
                 "gpu": "AMD MI300X",
                 "backend": "triton",
                 "use_subprocess": use_subprocess,
@@ -477,13 +477,13 @@ class RobustMultiTurnQwen3Evaluator:
     def load_jsonl_templates(self):
         """Load JSONL templates for prompt construction."""
         jsonl_files = {
-            1: "/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl",
-            2: "/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_2.jsonl"
+            1: "/root/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl",
+            2: "/root/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_2.jsonl"
         }
         
         for level, jsonl_path in jsonl_files.items():
             if not os.path.exists(jsonl_path):
-                alt_path = f"/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_{level}.jsonl"
+                alt_path = f"/root/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_{level}.jsonl"
                 if os.path.exists(alt_path):
                     jsonl_path = alt_path
                 else:
@@ -871,7 +871,7 @@ Output the complete code in a Python code block."""
         
         print(f"\n{'='*70}")
         print(f"Robust Multi-Turn Qwen3-8B Triton Code Generation Evaluation")
-        print(f"Model: Qwen/Qwen3-8B on SGLang")
+        print(f"Model: Qwen/Qwen3-8B-fined-tuned on SGLang")
         print(f"GPU: AMD MI300X")
         print(f"Levels: {levels}")
         print(f"Max turns: {self.max_turns}, Gamma: {self.gamma}")
@@ -929,7 +929,7 @@ Output the complete code in a Python code block."""
         with open(report_file, 'w') as f:
             f.write("# Multi-Turn Qwen3-8B Triton Evaluation Report\n\n")
             f.write(f"**Run**: {self.run_name}\n")
-            f.write(f"**Model**: Qwen/Qwen3-8B\n")
+            f.write(f"**Model**: Qwen/Qwen3-8B-fined-tuned\n")
             f.write(f"**Configuration**: max_turns={self.max_turns}, gamma={self.gamma}\n")
             f.write(f"**Start**: {self.results['metadata']['start_time']}\n")
             f.write(f"**End**: {datetime.now().isoformat()}\n\n")

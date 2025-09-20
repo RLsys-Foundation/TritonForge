@@ -19,7 +19,7 @@ from typing import Optional, Tuple, Dict, Any
 from openai import OpenAI
 
 # Add paths
-sys.path.insert(0, '/home/jinpan12/workspace/KernelBench')
+sys.path.insert(0, '/root/TritonForge/KBenchEval/kernelbench_amd_tools/')
 
 from src.eval import eval_kernel_against_ref
 from src.dataset import construct_kernelbench_dataset
@@ -30,7 +30,7 @@ os.environ['OPENAI_API_KEY'] = 'dummy-key'
 os.environ['ROCM_HOME'] = '/opt/rocm'
 os.environ['HIP_PLATFORM'] = 'amd'
 os.environ['PYTORCH_ROCM_ARCH'] = 'gfx942'
-os.environ['PYTHONPATH'] = '/home/jinpan12/workspace/KernelBench:' + os.environ.get('PYTHONPATH', '')
+os.environ['PYTHONPATH'] = '/root/TritonForge/KBenchEval/kernelbench_amd_tools/:' + os.environ.get('PYTHONPATH', '')
 
 # Disable GPU core dumps to prevent crashes
 os.environ['HSA_ENABLE_COREDUMP'] = '0'
@@ -68,7 +68,7 @@ import os
 import base64
 
 # Add paths
-sys.path.insert(0, '/home/jinpan12/workspace/KernelBench')
+sys.path.insert(0, '/root/TritonForge/KBenchEval/kernelbench_amd_tools/')
 
 # Set environment
 os.environ['ROCM_HOME'] = '/opt/rocm'
@@ -302,7 +302,7 @@ class RobustQwen3Evaluator:
         self.eval_timeout = eval_timeout
         
         # Setup directories
-        self.results_dir = f"/home/jinpan12/workspace/KernelBench/runs/{run_name}"
+        self.results_dir = f"/root/TritonForge/KBenchEval/kernelbench_amd_tools/runs/{run_name}"
         self.report_dir = f"{self.results_dir}/reports"
         self.kernels_dir = f"{self.results_dir}/generated_kernels"
         self.logs_dir = f"{self.results_dir}/logs"
@@ -335,7 +335,7 @@ class RobustQwen3Evaluator:
             "metadata": {
                 "run_name": run_name,
                 "start_time": datetime.now().isoformat(),
-                "model": "Qwen/Qwen3-8B",
+                "model": "Qwen/Qwen3-8B-fined-tuned",
                 "gpu": "AMD MI300X",
                 "backend": "triton",
                 "use_subprocess": use_subprocess
@@ -361,13 +361,13 @@ class RobustQwen3Evaluator:
     def load_jsonl_templates(self):
         """Load JSONL templates for prompt construction."""
         jsonl_files = {
-            1: "/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl",
-            2: "/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_2.jsonl"
+            1: "/root/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl",
+            2: "/root/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_2.jsonl"
         }
         
         for level, jsonl_path in jsonl_files.items():
             if not os.path.exists(jsonl_path):
-                alt_path = f"/home/jinpan12/workspace/slime/data/kernel_bench/kernel_bench_triton_level_{level}.jsonl"
+                alt_path = f"/root/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_{level}.jsonl"
                 if os.path.exists(alt_path):
                     jsonl_path = alt_path
                 else:
@@ -504,7 +504,7 @@ Output the complete code in a Python code block."""
             messages = self.construct_messages(level, str(problem_id), ref_code)
             
             # Query model
-            print("  Querying Qwen3-8B...", end=" ")
+            print("  Querying Qwen3-8B-fined-tuned...", end=" ")
             start_time = time.time()
             response = self.query_model(messages)
             generation_time = time.time() - start_time
@@ -638,7 +638,7 @@ Output the complete code in a Python code block."""
         
         print(f"\n{'='*70}")
         print(f"Robust Qwen3-8B Triton Code Generation Evaluation")
-        print(f"Model: Qwen/Qwen3-8B on SGLang")
+        print(f"Model: Qwen/Qwen3-8B-fined-tuned on SGLang")
         print(f"GPU: AMD MI300X")
         print(f"Levels: {levels}")
         print(f"Subprocess isolation: {self.use_subprocess}")

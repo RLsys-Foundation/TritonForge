@@ -11,3 +11,4 @@ cache/*
 !results/timing/
 .env
 gpucore.*
+kernelbench_amd_tools/runs/*
