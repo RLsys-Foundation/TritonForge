@@ -47,7 +47,7 @@ tmux send-keys -t ${SESSION_NAME}:${WINDOW_2} "python buffer.py |& tee /root/Tri
 # Window 3: ROBUST Evaluation server (using separate GPUs)
 tmux new-window -t $SESSION_NAME -n $WINDOW_3
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "sleep 30" C-m
-tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "cd /root/TritonForge/KBenchEval/kernelbench_amd_tools" C-m
+tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "cd /root/TritonForge/KBenchEval" C-m
 
 # Use HIP_VISIBLE_DEVICES for AMD GPUs (using GPUs 2,3 for evaluation)
 tmux send-keys -t ${SESSION_NAME}:${WINDOW_3} "export HIP_VISIBLE_DEVICES='2,3'" C-m

@@ -24,7 +24,7 @@ from generator.utils.default_func import (
 )
 from pydantic import BaseModel
 
-from tools.visualizer import BufferStatsVisualizer
+from buffer_tools.visualizer import BufferStatsVisualizer
 
 app = FastAPI(title="Rollout Buffer Server", debug=True)
 
