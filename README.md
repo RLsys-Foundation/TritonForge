@@ -285,9 +285,27 @@ graph LR
 
 ### Stage 1: Supervised Fine-Tuning (SFT)
 
-We first fine-tune the base Qwen3-8B model using high-quality PyTorch-to-kernel conversion datasets:
-- [GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook): 18.2k curated PyTorch-to-Triton code pairs
-- [facebook/KernelLLM](https://huggingface.co/datasets/facebook/KernelLLM): Additional high-quality kernel conversion examples
+We leverage the **same SLIME framework** for both SFT and RL stages, providing a unified training pipeline. The SFT stage fine-tunes the base Qwen3-8B model using:
+
+- [GPUMODE/KernelBook](https://huggingface.co/datasets/GPUMODE/KernelBook): 18.2k curated PyTorch-to-Triton code pairs (filtered to ~17k)
+- Custom data augmentations: Multi-turn conversations, thinking tags, and length filtering
+
+**Training Configuration** (`SLIME/scripts/run-qwen3-8B-kernelbook-sft.sh`):
+
+<div align="center">
+
+| Parameter | Value | Purpose |
+|-----------|-------|---------|
+| **Tensor Parallel (TP)** | 2 | Splits model across 2 GPUs for memory efficiency |
+| **Context Parallel (CP)** | 4 | Handles long sequences by splitting context |
+| **Pipeline Parallel (PP)** | 1 | No pipeline parallelism |
+| **Data Parallel (DP)** | 1 | Single data parallel replica |
+| **Batch Size** | 32 | Global batch size for training |
+| **Learning Rate** | 1e-5 | With cosine decay to 1e-6 |
+| **Precision** | BF16 | Mixed precision training |
+| **Gradient Recomputation** | Full (12 layers) | Reduces memory footprint |
+
+</div>
 
 The resulting model is available at [JinnP/Qwen3-8B-Kernelbook-SFT-filtered](https://huggingface.co/JinnP/Qwen3-8B-Kernelbook-SFT-filtered).
 
@@ -361,7 +379,15 @@ python scripts/generate_and_eval_single_sample.py \
 <tr>
 <td>
 
-**NVIDIA**
+**NVIDIA - SFT Stage**
+
+```bash
+cd SLIME
+# Supervised Fine-Tuning using SLIME
+bash scripts/run-qwen3-8B-kernelbook-sft.sh
+```
+
+**NVIDIA - RL Stage**
 
 ```bash
 cd SLIME

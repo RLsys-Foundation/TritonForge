@@ -350,6 +350,10 @@ KBenchEval/
 │   └── simple_eval_server*.py              # Evaluation servers
 ├── kernelbench_amd_tools/          # AMD-specific utilities
 │   └── scripts/                    # AMD evaluation scripts
+├── SFT_data_pipeline/              # Supervised fine-tuning data generation
+│   ├── mutli-turn-data-pipeline/  # Multi-turn conversation generation
+│   ├── thinking-filtering-data-pipeline/  # Thinking tags & filtering
+│   └── assets/                    # Training visualizations
 ├── results/                        # Baseline times across hardware
 ├── runs/                           # Generated kernels and evaluations
 └── tests/                          # Unit tests
@@ -405,7 +409,22 @@ python scripts/simple_eval_server_cuda_fix.py
 
 ## 🔬 Results
 
-*[Results section to be added after experiments complete]*
+### Fine-tuned Model Performance
+
+We evaluated our SFT fine-tuned Qwen3-8B model on KernelBench Level 1-2:
+
+<div align="center">
+
+| Model | Level 1 Pass@1 | Level 2 Pass@1 | Training Data | Notes |
+|-------|----------------|----------------|---------------|--------|
+| **Qwen3-8B-Kernelbook-SFT** | 18% | 8% | 17k filtered samples | Close to KernelBook baseline (20%) |
+| **KernelBook Baseline** | 20% | - | Original dataset | Reference performance |
+
+</div>
+
+The model demonstrates strong performance on Level 1 problems, achieving results close to the KernelBook baseline. This validates our SFT data pipeline's effectiveness in creating high-quality training data.
+
+**Model Checkpoint**: [JinnP/Qwen3-8B-Kernelbook-SFT-filtered](https://huggingface.co/JinnP/Qwen3-8B-Kernelbook-SFT-filtered)
 
 ## 🛣️ Roadmap
 
