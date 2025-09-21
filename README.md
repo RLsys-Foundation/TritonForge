@@ -439,15 +439,14 @@ TritonForge/
 
 ## 📊 Results
 
-### Performance Metrics (WIP)
+We evaluated our SFT fine-tuned Qwen3-8B model on KernelBench Level 1-2:
 
 <div align="center">
 
-| Metric | Description | Target | Achieved* |
-|--------|-------------|--------|-----------|
-| **compilation_rate** | |  | |
-| **correctness_rate** |  |  | |
-| **performance** |  |  | |
+| Model | Level 1 Pass@1 | Level 2 Pass@1 | Training Data | Notes |
+|-------|----------------|----------------|---------------|--------|
+| **Qwen3-8B-Kernelbook-SFT** | 18% | 8% | 17k filtered samples | Close to KernelBook baseline (20%) |
+| **KernelBook Baseline** | 20% | - | Original dataset | Reference performance |
 
 </div>
 
@@ -520,7 +519,7 @@ We have conducted extensive experiments across different hardware platforms and 
 3. **Model Scaling**: Fine-tuned Qwen3-8B outperforms baseline models by **25-30%** on average
 4. **Compilation Success**: Achieved **>90% compilation rate** with proper error handling in multi-turn setting
 
-### Benchmark Breakdown by Level (WIP)
+<!-- ### Benchmark Breakdown by Level (WIP)
 
 <div align="center">
 
@@ -529,7 +528,7 @@ We have conducted extensive experiments across different hardware platforms and 
 | **Level 1** | 100 | | | |
 | **Level 2** | 100 | | | |
 
-</div>
+</div> -->
 
 ## 🤝 Contributing
 
