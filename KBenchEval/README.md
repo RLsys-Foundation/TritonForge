@@ -363,16 +363,44 @@ KBenchEval/
 
 ### Performance Baselines
 
-Generate hardware-specific baselines:
+We provide reference baseline times for various GPUs in `results/timing/`:
 
+#### Available Baselines
+
+<div align="center">
+
+| Hardware | Platform | Level 1 | Level 2 | Total Problems |
+|----------|----------|---------|---------|----------------|
+| **MI300X_rocm** | AMD ROCm | ✅ 100 | ✅ 100 | 200 |
+| **H100_together** | NVIDIA CUDA | ✅ 100 | ✅ 100 | 200 |
+| **A100_modal** | NVIDIA CUDA | ✅ 100 | ✅ 100 | 200 |
+| **L40S_modal** | NVIDIA CUDA | ✅ 100 | ✅ 100 | 200 |
+| **B200_together** | NVIDIA CUDA | ✅ 100 | ✅ 100 | 200 |
+
+</div>
+
+#### Generate Your Own Baselines
+
+**For AMD MI300X:**
+```bash
+# Complete baseline generation script for AMD GPUs
+bash scripts/run_amd_baseline_generation.sh
+
+# Or manually:
+python scripts/generate_baseline_time_amd.py \
+  --level 1 2 \
+  --hardware MI300X_rocm
+```
+
+**For NVIDIA GPUs:**
 ```bash
 python scripts/generate_baseline_time.py \
   level=1 \
-  hardware_name="MI300X" \
+  hardware_name="H100" \
   num_runs=100
 ```
 
-We provide reference baseline times for various NVIDIA GPUs in `results/timing`, but recommend generating your own for accuracy.
+We recommend generating your own baselines for accuracy on your specific hardware configuration.
 
 ### Multi-Turn Framework
 
@@ -435,13 +463,13 @@ The model demonstrates strong performance on Level 1 problems, achieving results
 - [ ] Backward pass support
 - [ ] NCU toolchain integration
 
-## 🔍 Known Usage
+## 🔍 Known Usage & Related Work
 
 - [NVIDIA](https://developer.nvidia.com/blog/automating-gpu-kernel-generation-with-deepseek-r1-and-inference-time-scaling/) - Automating GPU Kernel Generation
 - [METR](https://metr.org/blog/2025-02-14-measuring-automated-kernel-engineering/) - Measuring Automated Kernel Engineering
 - [Sakana AI](https://sakana.ai/ai-cuda-engineer/) - AI Cuda Engineer
 - [Project Popcorn](https://www.youtube.com/watch?v=mdDVkBeFy9A) - Triton Support for KernelBench
-- [Kevin](https://cognition.ai/blog/kevin-32b) - Kevin-32B: Multi-Turn RL for Writing CUDA Kernels
+- [Kevin](https://cognition.ai/blog/kevin-32b) - Kevin-32B: Multi-Turn RL for Writing CUDA Kernels ([Paper](https://arxiv.org/abs/2507.11948))
 - [Simple Test-Time Search](https://scalingintelligence.stanford.edu/blogs/fastkernels/) - by @anneouyang
 
 ## 📄 License

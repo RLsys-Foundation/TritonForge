@@ -581,6 +581,11 @@ We extend our deepest gratitude to the individuals whose dedication and expertis
 #### 🚀 AMD Platform Support
 - **Yusheng Su** (AMD Mentor), **Yuzhen Zhou**, and **Jiajun Li** - For their instrumental support in enabling AMD MI300X compatibility and ROCm optimization. Their expertise was critical in making TritonForge a truly cross-platform solution.
 
+### Research Inspiration
+
+#### 📚 Kevin: Multi-Turn RL for CUDA Kernels
+We were heavily inspired by **[Kevin](https://arxiv.org/abs/2507.11948)** from Cognition AI, which pioneered multi-turn reinforcement learning for writing CUDA kernels. Kevin's approach to iterative kernel refinement through RL directly influenced our multi-turn training methodology. By open-sourcing our complete framework, we hope to contribute back to the community and enable further research in automated kernel optimization.
+
 ### Project Dependencies
 
 <div align="center">

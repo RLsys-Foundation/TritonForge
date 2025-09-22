@@ -1,0 +1,106 @@
+{
+  "level1": {
+    "1_Square_matrix_multiplication_.py": {
+      "mean": 0.19,
+      "std": 0.0105,
+      "min": 0.176,
+      "max": 0.251,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "2_Standard_matrix_multiplication_.py": {
+      "mean": 0.224,
+      "std": 0.0106,
+      "min": 0.211,
+      "max": 0.295,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "3_Batched_matrix_multiplication.py": {
+      "mean": 0.0786,
+      "std": 0.00633,
+      "min": 0.0729,
+      "max": 0.137,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "4_Matrix_vector_multiplication_.py": {
+      "mean": 1.18,
+      "std": 0.00696,
+      "min": 1.16,
+      "max": 1.22,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "5_Matrix_scalar_multiplication.py": {
+      "mean": 0.144,
+      "std": 0.00428,
+      "min": 0.138,
+      "max": 0.174,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    }
+  },
+  "level2": {
+    "1_Conv2D_ReLU_BiasAdd.py": {
+      "mean": 0.0791,
+      "std": 0.0114,
+      "min": 0.0732,
+      "max": 0.187,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "2_ConvTranspose2d_BiasAdd_Clamp_Scaling_Clamp_Divide.py": {
+      "mean": 0.182,
+      "std": 0.00655,
+      "min": 0.173,
+      "max": 0.243,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "3_ConvTranspose3d_Sum_LayerNorm_AvgPool_GELU.py": {
+      "mean": 48.6,
+      "std": 1.35,
+      "min": 48.0,
+      "max": 60.1,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "4_Conv2d_Mish_Mish.py": {
+      "mean": 0.0892,
+      "std": 0.0093,
+      "min": 0.0843,
+      "max": 0.179,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "5_ConvTranspose2d_Subtract_Tanh.py": {
+      "mean": 0.0992,
+      "std": 0.00746,
+      "min": 0.0927,
+      "max": 0.168,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    }
+  }
+}

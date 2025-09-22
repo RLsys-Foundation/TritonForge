@@ -1,0 +1,2006 @@
+{
+  "level1": {
+    "1_Square_matrix_multiplication_.py": {
+      "mean": 0.192,
+      "std": 0.0115,
+      "min": 0.179,
+      "max": 0.257,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "2_Standard_matrix_multiplication_.py": {
+      "mean": 0.225,
+      "std": 0.0107,
+      "min": 0.213,
+      "max": 0.289,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "3_Batched_matrix_multiplication.py": {
+      "mean": 0.0791,
+      "std": 0.00678,
+      "min": 0.0715,
+      "max": 0.14,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "4_Matrix_vector_multiplication_.py": {
+      "mean": 1.18,
+      "std": 0.00688,
+      "min": 1.16,
+      "max": 1.23,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "5_Matrix_scalar_multiplication.py": {
+      "mean": 0.144,
+      "std": 0.00488,
+      "min": 0.136,
+      "max": 0.181,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "6_Matmul_with_large_K_dimension_.py": {
+      "mean": 0.225,
+      "std": 0.0179,
+      "min": 0.2,
+      "max": 0.317,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "7_Matmul_with_small_K_dimension_.py": {
+      "mean": 0.438,
+      "std": 0.483,
+      "min": 0.327,
+      "max": 5.23,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "8_Matmul_with_irregular_shapes_.py": {
+      "mean": 2.67,
+      "std": 0.0594,
+      "min": 2.61,
+      "max": 3.07,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "9_Tall_skinny_matrix_multiplication_.py": {
+      "mean": 0.3,
+      "std": 0.0158,
+      "min": 0.27,
+      "max": 0.368,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "10_3D_tensor_matrix_multiplication.py": {
+      "mean": 0.479,
+      "std": 0.0246,
+      "min": 0.448,
+      "max": 0.57,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "11_4D_tensor_matrix_multiplication.py": {
+      "mean": 8.62,
+      "std": 0.124,
+      "min": 8.47,
+      "max": 9.73,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "12_Matmul_with_diagonal_matrices_.py": {
+      "mean": 1.04,
+      "std": 0.0253,
+      "min": 0.988,
+      "max": 1.18,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "13_Matmul_for_symmetric_matrices.py": {
+      "mean": 1.22,
+      "std": 0.0414,
+      "min": 1.16,
+      "max": 1.44,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "14_Matmul_for_upper_triangular_matrices.py": {
+      "mean": 1.12,
+      "std": 0.337,
+      "min": 1.01,
+      "max": 4.46,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "15_Matmul_for_lower_triangular_matrices.py": {
+      "mean": 1.1,
+      "std": 0.0255,
+      "min": 1.05,
+      "max": 1.21,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "16_Matmul_with_transposed_A.py": {
+      "mean": 0.233,
+      "std": 0.015,
+      "min": 0.213,
+      "max": 0.341,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "17_Matmul_with_transposed_B.py": {
+      "mean": 0.193,
+      "std": 0.015,
+      "min": 0.18,
+      "max": 0.302,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "18_Matmul_with_transposed_both.py": {
+      "mean": 0.594,
+      "std": 0.0114,
+      "min": 0.584,
+      "max": 0.661,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "19_ReLU.py": {
+      "mean": 0.0139,
+      "std": 0.00415,
+      "min": 0.00842,
+      "max": 0.0503,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "20_LeakyReLU.py": {
+      "mean": 0.0143,
+      "std": 0.00502,
+      "min": 0.0105,
+      "max": 0.056,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "21_Sigmoid.py": {
+      "mean": 0.0133,
+      "std": 0.00392,
+      "min": 0.00822,
+      "max": 0.0475,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "22_Tanh.py": {
+      "mean": 0.0135,
+      "std": 0.0039,
+      "min": 0.0116,
+      "max": 0.0497,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "23_Softmax.py": {
+      "mean": 0.018,
+      "std": 0.00358,
+      "min": 0.013,
+      "max": 0.0494,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "24_LogSoftmax.py": {
+      "mean": 0.0762,
+      "std": 0.6,
+      "min": 0.0101,
+      "max": 6.04,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "25_Swish.py": {
+      "mean": 0.019,
+      "std": 0.00485,
+      "min": 0.0134,
+      "max": 0.0598,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "26_GELU_.py": {
+      "mean": 0.0132,
+      "std": 0.00394,
+      "min": 0.01,
+      "max": 0.0477,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "27_SELU_.py": {
+      "mean": 0.0136,
+      "std": 0.00405,
+      "min": 0.0103,
+      "max": 0.0504,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "28_HardSigmoid.py": {
+      "mean": 0.0141,
+      "std": 0.00405,
+      "min": 0.00846,
+      "max": 0.0494,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "29_Softplus.py": {
+      "mean": 0.0135,
+      "std": 0.00416,
+      "min": 0.00826,
+      "max": 0.0488,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "30_Softsign.py": {
+      "mean": 0.0276,
+      "std": 0.00635,
+      "min": 0.0202,
+      "max": 0.0864,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "31_ELU.py": {
+      "mean": 0.0135,
+      "std": 0.00395,
+      "min": 0.0112,
+      "max": 0.0507,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "32_HardTanh.py": {
+      "mean": 0.0162,
+      "std": 0.00517,
+      "min": 0.0133,
+      "max": 0.0593,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "33_BatchNorm.py": {
+      "mean": 0.681,
+      "std": 0.0102,
+      "min": 0.667,
+      "max": 0.764,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "34_InstanceNorm.py": {
+      "mean": 0.355,
+      "std": 0.00664,
+      "min": 0.346,
+      "max": 0.4,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "35_GroupNorm_.py": {
+      "mean": 0.633,
+      "std": 0.00611,
+      "min": 0.625,
+      "max": 0.678,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "36_RMSNorm_.py": {
+      "mean": 0.471,
+      "std": 0.0118,
+      "min": 0.437,
+      "max": 0.498,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "37_FrobeniusNorm_.py": {
+      "mean": 0.313,
+      "std": 0.00743,
+      "min": 0.305,
+      "max": 0.362,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "38_L1Norm_.py": {
+      "mean": 0.0284,
+      "std": 0.00696,
+      "min": 0.0217,
+      "max": 0.0898,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "39_L2Norm_.py": {
+      "mean": 0.0227,
+      "std": 0.00741,
+      "min": 0.0155,
+      "max": 0.0887,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "40_LayerNorm.py": {
+      "mean": 3.66,
+      "std": 0.0105,
+      "min": 3.62,
+      "max": 3.68,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "41_Max_Pooling_1D.py": {
+      "mean": 0.0202,
+      "std": 0.00593,
+      "min": 0.0172,
+      "max": 0.0707,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "42_Max_Pooling_2D.py": {
+      "mean": 0.0296,
+      "std": 0.00348,
+      "min": 0.0273,
+      "max": 0.0609,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "43_Max_Pooling_3D.py": {
+      "mean": 0.448,
+      "std": 0.014,
+      "min": 0.403,
+      "max": 0.492,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "44_Average_Pooling_1D.py": {
+      "mean": 0.0177,
+      "std": 0.00488,
+      "min": 0.0143,
+      "max": 0.0627,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "45_Average_Pooling_2D.py": {
+      "mean": 0.0975,
+      "std": 0.00473,
+      "min": 0.088,
+      "max": 0.132,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "46_Average_Pooling_3D.py": {
+      "mean": 0.386,
+      "std": 0.0136,
+      "min": 0.357,
+      "max": 0.426,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "47_Sum_reduction_over_a_dimension.py": {
+      "mean": 0.0205,
+      "std": 0.00654,
+      "min": 0.0164,
+      "max": 0.0834,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "48_Mean_reduction_over_a_dimension.py": {
+      "mean": 0.0205,
+      "std": 0.00452,
+      "min": 0.0131,
+      "max": 0.0609,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "49_Max_reduction_over_a_dimension.py": {
+      "mean": 0.0661,
+      "std": 0.00488,
+      "min": 0.0617,
+      "max": 0.111,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "50_Product_reduction_over_a_dimension.py": {
+      "mean": 0.0355,
+      "std": 0.00368,
+      "min": 0.029,
+      "max": 0.069,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "51_Argmax_over_a_dimension.py": {
+      "mean": 0.0636,
+      "std": 0.00432,
+      "min": 0.0609,
+      "max": 0.104,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "52_Argmin_over_a_dimension.py": {
+      "mean": 0.0633,
+      "std": 0.00419,
+      "min": 0.0615,
+      "max": 0.103,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "53_Min_reduction_over_a_dimension.py": {
+      "mean": 0.065,
+      "std": 0.00459,
+      "min": 0.0573,
+      "max": 0.107,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "54_conv_standard_3D__square_input__square_kernel.py": {
+      "mean": 2.71,
+      "std": 0.04,
+      "min": 2.61,
+      "max": 2.9,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "55_conv_standard_2D__asymmetric_input__square_kernel.py": {
+      "mean": 0.122,
+      "std": 0.00716,
+      "min": 0.116,
+      "max": 0.18,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "56_conv_standard_2D__asymmetric_input__asymmetric_kernel.py": {
+      "mean": 0.135,
+      "std": 0.00879,
+      "min": 0.13,
+      "max": 0.216,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "57_conv_transposed_2D__square_input__square_kernel.py": {
+      "mean": 0.173,
+      "std": 0.0102,
+      "min": 0.161,
+      "max": 0.248,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "58_conv_transposed_3D__asymmetric_input__asymmetric_kernel.py": {
+      "mean": 2.92,
+      "std": 0.047,
+      "min": 2.85,
+      "max": 3.08,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "59_conv_standard_3D__asymmetric_input__square_kernel.py": {
+      "mean": 5.69,
+      "std": 0.23,
+      "min": 5.29,
+      "max": 6.25,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "60_conv_standard_3D__square_input__asymmetric_kernel.py": {
+      "mean": 4.29,
+      "std": 0.0542,
+      "min": 4.19,
+      "max": 4.63,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "61_conv_transposed_3D__square_input__square_kernel.py": {
+      "mean": 0.657,
+      "std": 0.0155,
+      "min": 0.632,
+      "max": 0.703,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "62_conv_standard_2D__square_input__asymmetric_kernel.py": {
+      "mean": 0.234,
+      "std": 0.0103,
+      "min": 0.221,
+      "max": 0.3,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "63_conv_standard_2D__square_input__square_kernel.py": {
+      "mean": 0.194,
+      "std": 0.00822,
+      "min": 0.186,
+      "max": 0.263,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "64_conv_transposed_1D.py": {
+      "mean": 0.0529,
+      "std": 0.00729,
+      "min": 0.0451,
+      "max": 0.121,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "65_conv_transposed_2D__square_input__asymmetric_kernel.py": {
+      "mean": 0.279,
+      "std": 0.0198,
+      "min": 0.256,
+      "max": 0.376,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "66_conv_standard_3D__asymmetric_input__asymmetric_kernel.py": {
+      "mean": 17.5,
+      "std": 0.0776,
+      "min": 17.3,
+      "max": 18.0,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "67_conv_standard_1D.py": {
+      "mean": 0.0456,
+      "std": 0.00806,
+      "min": 0.0425,
+      "max": 0.118,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "68_conv_transposed_3D__square_input__asymmetric_kernel.py": {
+      "mean": 59.6,
+      "std": 2.55,
+      "min": 58.3,
+      "max": 73.0,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "69_conv_transposed_2D__asymmetric_input__asymmetric_kernel.py": {
+      "mean": 0.0564,
+      "std": 0.00669,
+      "min": 0.0508,
+      "max": 0.12,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "70_conv_transposed_3D__asymmetric_input__square_kernel.py": {
+      "mean": 1.1,
+      "std": 0.0239,
+      "min": 1.08,
+      "max": 1.19,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "71_conv_transposed_2D__asymmetric_input__square_kernel.py": {
+      "mean": 0.307,
+      "std": 0.0238,
+      "min": 0.286,
+      "max": 0.423,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "72_conv_transposed_3D_asymmetric_input_asymmetric_kernel___strided_padded_grouped_.py": {
+      "mean": 14.4,
+      "std": 1.66,
+      "min": 13.9,
+      "max": 26.6,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "73_conv_transposed_3D_asymmetric_input_square_kernel__strided_padded__grouped.py": {
+      "mean": 2.18,
+      "std": 0.0405,
+      "min": 2.11,
+      "max": 2.37,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "74_conv_transposed_1D_dilated.py": {
+      "mean": 0.05,
+      "std": 0.00775,
+      "min": 0.0465,
+      "max": 0.121,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "75_conv_transposed_2D_asymmetric_input_asymmetric_kernel_strided__grouped____padded____dilated__.py": {
+      "mean": 5.35,
+      "std": 0.0701,
+      "min": 5.21,
+      "max": 5.69,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "76_conv_standard_1D_dilated_strided__.py": {
+      "mean": 0.0453,
+      "std": 0.0075,
+      "min": 0.0405,
+      "max": 0.115,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "77_conv_transposed_3D_square_input_square_kernel___padded____dilated____strided__.py": {
+      "mean": 2.83,
+      "std": 0.0447,
+      "min": 2.76,
+      "max": 3.14,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "78_conv_transposed_2D_asymmetric_input_asymmetric_kernel___padded__.py": {
+      "mean": 0.477,
+      "std": 0.0272,
+      "min": 0.447,
+      "max": 0.616,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "79_conv_transposed_1D_asymmetric_input_square_kernel___padded____strided____dilated__.py": {
+      "mean": 0.0602,
+      "std": 0.00828,
+      "min": 0.054,
+      "max": 0.138,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "80_conv_standard_2D_square_input_asymmetric_kernel___dilated____padded__.py": {
+      "mean": 0.573,
+      "std": 0.0104,
+      "min": 0.541,
+      "max": 0.617,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "81_conv_transposed_2D_asymmetric_input_square_kernel___dilated____padded____strided__.py": {
+      "mean": 1.46,
+      "std": 0.0134,
+      "min": 1.43,
+      "max": 1.51,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "82_conv_depthwise_2D_square_input_square_kernel.py": {
+      "mean": 0.194,
+      "std": 0.00623,
+      "min": 0.187,
+      "max": 0.25,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "83_conv_depthwise_2D_square_input_asymmetric_kernel.py": {
+      "mean": 0.247,
+      "std": 0.00861,
+      "min": 0.219,
+      "max": 0.303,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "84_conv_depthwise_2D_asymmetric_input_square_kernel.py": {
+      "mean": 0.184,
+      "std": 0.00603,
+      "min": 0.176,
+      "max": 0.238,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "85_conv_depthwise_2D_asymmetric_input_asymmetric_kernel.py": {
+      "mean": 0.143,
+      "std": 0.00587,
+      "min": 0.138,
+      "max": 0.198,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "86_conv_depthwise_separable_2D.py": {
+      "mean": 0.343,
+      "std": 0.00745,
+      "min": 0.334,
+      "max": 0.398,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "87_conv_pointwise_2D.py": {
+      "mean": 0.958,
+      "std": 7.78,
+      "min": 0.16,
+      "max": 78.4,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "88_MinGPTNewGelu.py": {
+      "mean": 0.111,
+      "std": 0.00537,
+      "min": 0.103,
+      "max": 0.154,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "89_cumsum.py": {
+      "mean": 0.0355,
+      "std": 0.00331,
+      "min": 0.0302,
+      "max": 0.0663,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "90_cumprod.py": {
+      "mean": 0.0353,
+      "std": 0.00331,
+      "min": 0.0305,
+      "max": 0.0665,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "91_cumsum_reverse.py": {
+      "mean": 0.0533,
+      "std": 0.00459,
+      "min": 0.0485,
+      "max": 0.0953,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "92_cumsum_exclusive.py": {
+      "mean": 0.0613,
+      "std": 0.00924,
+      "min": 0.0557,
+      "max": 0.148,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "93_masked_cumsum.py": {
+      "mean": 0.0459,
+      "std": 0.00436,
+      "min": 0.0403,
+      "max": 0.0865,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "94_MSELoss.py": {
+      "mean": 0.0445,
+      "std": 0.00652,
+      "min": 0.0388,
+      "max": 0.103,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "95_CrossEntropyLoss.py": {
+      "mean": 0.0702,
+      "std": 0.00725,
+      "min": 0.0639,
+      "max": 0.14,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "96_HuberLoss.py": {
+      "mean": 0.0417,
+      "std": 0.0065,
+      "min": 0.0373,
+      "max": 0.102,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "97_CosineSimilarityLoss.py": {
+      "mean": 0.0826,
+      "std": 0.0113,
+      "min": 0.0728,
+      "max": 0.179,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "98_KLDivLoss.py": {
+      "mean": 0.0633,
+      "std": 0.0149,
+      "min": 0.0536,
+      "max": 0.16,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "99_TripletMarginLoss.py": {
+      "mean": 0.0746,
+      "std": 0.0218,
+      "min": 0.0661,
+      "max": 0.255,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "100_HingeLoss.py": {
+      "mean": 0.0362,
+      "std": 0.00784,
+      "min": 0.0301,
+      "max": 0.106,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    }
+  },
+  "level2": {
+    "1_Conv2D_ReLU_BiasAdd.py": {
+      "mean": 0.0783,
+      "std": 0.01,
+      "min": 0.0709,
+      "max": 0.175,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "2_ConvTranspose2d_BiasAdd_Clamp_Scaling_Clamp_Divide.py": {
+      "mean": 0.181,
+      "std": 0.00658,
+      "min": 0.176,
+      "max": 0.238,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "3_ConvTranspose3d_Sum_LayerNorm_AvgPool_GELU.py": {
+      "mean": 48.5,
+      "std": 0.152,
+      "min": 48.1,
+      "max": 49.1,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "4_Conv2d_Mish_Mish.py": {
+      "mean": 0.0896,
+      "std": 0.00772,
+      "min": 0.0847,
+      "max": 0.159,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "5_ConvTranspose2d_Subtract_Tanh.py": {
+      "mean": 0.0976,
+      "std": 0.00756,
+      "min": 0.0901,
+      "max": 0.164,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "6_Conv3d_Softmax_MaxPool_MaxPool.py": {
+      "mean": 0.873,
+      "std": 0.0207,
+      "min": 0.829,
+      "max": 0.944,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "7_Conv3d_ReLU_LeakyReLU_GELU_Sigmoid_BiasAdd.py": {
+      "mean": 0.947,
+      "std": 0.0184,
+      "min": 0.908,
+      "max": 1.01,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "8_Conv3d_Divide_Max_GlobalAvgPool_BiasAdd_Sum.py": {
+      "mean": 0.802,
+      "std": 0.0177,
+      "min": 0.768,
+      "max": 0.862,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "9_Matmul_Subtract_Multiply_ReLU.py": {
+      "mean": 0.0537,
+      "std": 0.0147,
+      "min": 0.0467,
+      "max": 0.189,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "10_ConvTranspose2d_MaxPool_Hardtanh_Mean_Tanh.py": {
+      "mean": 0.153,
+      "std": 0.0073,
+      "min": 0.147,
+      "max": 0.22,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "11_ConvTranspose2d_BatchNorm_Tanh_MaxPool_GroupNorm.py": {
+      "mean": 0.686,
+      "std": 0.0127,
+      "min": 0.674,
+      "max": 0.78,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "12_Gemm_Multiply_LeakyReLU.py": {
+      "mean": 0.0462,
+      "std": 0.0111,
+      "min": 0.04,
+      "max": 0.146,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "13_ConvTranspose3d_Mean_Add_Softmax_Tanh_Scaling.py": {
+      "mean": 1.06,
+      "std": 0.00931,
+      "min": 1.05,
+      "max": 1.12,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "14_Gemm_Divide_Sum_Scaling.py": {
+      "mean": 0.0528,
+      "std": 0.0117,
+      "min": 0.0454,
+      "max": 0.157,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "15_ConvTranspose3d_BatchNorm_Subtract.py": {
+      "mean": 2.52,
+      "std": 0.0205,
+      "min": 2.49,
+      "max": 2.62,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "16_ConvTranspose2d_Mish_Add_Hardtanh_Scaling.py": {
+      "mean": 0.231,
+      "std": 0.0105,
+      "min": 0.223,
+      "max": 0.321,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "17_Conv2d_InstanceNorm_Divide.py": {
+      "mean": 0.0923,
+      "std": 0.0142,
+      "min": 0.0838,
+      "max": 0.226,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "18_Matmul_Sum_Max_AvgPool_LogSumExp_LogSumExp.py": {
+      "mean": 0.161,
+      "std": 0.0153,
+      "min": 0.149,
+      "max": 0.294,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "19_ConvTranspose2d_GELU_GroupNorm.py": {
+      "mean": 0.545,
+      "std": 0.0167,
+      "min": 0.517,
+      "max": 0.611,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "20_ConvTranspose3d_Sum_ResidualAdd_Multiply_ResidualAdd.py": {
+      "mean": 4.92,
+      "std": 0.062,
+      "min": 4.69,
+      "max": 5.26,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "21_Conv2d_Add_Scale_Sigmoid_GroupNorm.py": {
+      "mean": 0.113,
+      "std": 0.015,
+      "min": 0.102,
+      "max": 0.249,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "22_Matmul_Scale_ResidualAdd_Clamp_LogSumExp_Mish.py": {
+      "mean": 0.124,
+      "std": 0.0171,
+      "min": 0.112,
+      "max": 0.27,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "23_Conv3d_GroupNorm_Mean.py": {
+      "mean": 0.804,
+      "std": 0.023,
+      "min": 0.772,
+      "max": 0.891,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "24_Conv3d_Min_Softmax.py": {
+      "mean": 0.826,
+      "std": 0.0196,
+      "min": 0.781,
+      "max": 0.894,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "25_Conv2d_Min_Tanh_Tanh.py": {
+      "mean": 0.0885,
+      "std": 0.00973,
+      "min": 0.08,
+      "max": 0.177,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "26_ConvTranspose3d_Add_HardSwish.py": {
+      "mean": 8.32,
+      "std": 0.0511,
+      "min": 8.18,
+      "max": 8.43,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "27_Conv3d_HardSwish_ReLU_Softmax_Mean.py": {
+      "mean": 0.899,
+      "std": 0.0197,
+      "min": 0.861,
+      "max": 0.976,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "28_BMM_InstanceNorm_Sum_ResidualAdd_Multiply.py": {
+      "mean": 0.0816,
+      "std": 0.0204,
+      "min": 0.0725,
+      "max": 0.274,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "29_Matmul_Mish_Mish.py": {
+      "mean": 0.0423,
+      "std": 0.0102,
+      "min": 0.036,
+      "max": 0.139,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "30_Gemm_GroupNorm_Hardtanh.py": {
+      "mean": 0.066,
+      "std": 0.0135,
+      "min": 0.0583,
+      "max": 0.188,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "31_Conv2d_Min_Add_Multiply.py": {
+      "mean": 0.0884,
+      "std": 0.011,
+      "min": 0.0835,
+      "max": 0.191,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "32_Conv2d_Scaling_Min.py": {
+      "mean": 0.0891,
+      "std": 0.00924,
+      "min": 0.0827,
+      "max": 0.177,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "33_Gemm_Scale_BatchNorm.py": {
+      "mean": 0.0751,
+      "std": 0.0148,
+      "min": 0.0657,
+      "max": 0.201,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "34_ConvTranspose3d_LayerNorm_GELU_Scaling.py": {
+      "mean": 60.7,
+      "std": 8.49,
+      "min": 58.8,
+      "max": 142.0,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "35_Conv2d_Subtract_HardSwish_MaxPool_Mish.py": {
+      "mean": 0.0944,
+      "std": 0.0128,
+      "min": 0.0858,
+      "max": 0.21,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "36_ConvTranspose2d_Min_Sum_GELU_Add.py": {
+      "mean": 0.15,
+      "std": 0.00703,
+      "min": 0.144,
+      "max": 0.213,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "37_Matmul_Swish_Sum_GroupNorm.py": {
+      "mean": 0.0756,
+      "std": 0.0143,
+      "min": 0.0653,
+      "max": 0.203,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "38_ConvTranspose3d_AvgPool_Clamp_Softmax_Multiply.py": {
+      "mean": 0.931,
+      "std": 0.0479,
+      "min": 0.897,
+      "max": 1.35,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "39_Gemm_Scale_BatchNorm.py": {
+      "mean": 0.075,
+      "std": 0.018,
+      "min": 0.0639,
+      "max": 0.237,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "40_Matmul_Scaling_ResidualAdd.py": {
+      "mean": 0.0535,
+      "std": 0.0121,
+      "min": 0.0439,
+      "max": 0.164,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "41_Gemm_BatchNorm_GELU_GroupNorm_Mean_ReLU.py": {
+      "mean": 0.119,
+      "std": 0.018,
+      "min": 0.105,
+      "max": 0.276,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "42_ConvTranspose2d_GlobalAvgPool_BiasAdd_LogSumExp_Sum_Multiply.py": {
+      "mean": 0.148,
+      "std": 0.0152,
+      "min": 0.138,
+      "max": 0.282,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "43_Conv3d_Max_LogSumExp_ReLU.py": {
+      "mean": 0.97,
+      "std": 0.0266,
+      "min": 0.92,
+      "max": 1.09,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "44_ConvTranspose2d_Multiply_GlobalAvgPool_GlobalAvgPool_Mean.py": {
+      "mean": 0.128,
+      "std": 0.00823,
+      "min": 0.12,
+      "max": 0.198,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "45_Gemm_Sigmoid_Sum_LogSumExp.py": {
+      "mean": 0.104,
+      "std": 0.0159,
+      "min": 0.0952,
+      "max": 0.245,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "46_Conv2d_Subtract_Tanh_Subtract_AvgPool.py": {
+      "mean": 0.0945,
+      "std": 0.00959,
+      "min": 0.0846,
+      "max": 0.183,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "47_Conv3d_Mish_Tanh.py": {
+      "mean": 0.204,
+      "std": 0.0191,
+      "min": 0.184,
+      "max": 0.34,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "48_Conv3d_Scaling_Tanh_Multiply_Sigmoid.py": {
+      "mean": 0.962,
+      "std": 0.469,
+      "min": 0.86,
+      "max": 5.63,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "49_ConvTranspose3d_Softmax_Sigmoid.py": {
+      "mean": 3.93,
+      "std": 0.0569,
+      "min": 3.81,
+      "max": 4.28,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "50_ConvTranspose3d_Scaling_AvgPool_BiasAdd_Scaling.py": {
+      "mean": 7.87,
+      "std": 0.0559,
+      "min": 7.68,
+      "max": 8.11,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "51_Gemm_Subtract_GlobalAvgPool_LogSumExp_GELU_ResidualAdd.py": {
+      "mean": 0.138,
+      "std": 0.0192,
+      "min": 0.117,
+      "max": 0.3,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "52_Conv2d_Activation_BatchNorm.py": {
+      "mean": 0.143,
+      "std": 0.0138,
+      "min": 0.136,
+      "max": 0.266,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "53_Gemm_Scaling_Hardtanh_GELU.py": {
+      "mean": 0.0567,
+      "std": 0.0125,
+      "min": 0.0514,
+      "max": 0.17,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "54_Conv2d_Multiply_LeakyReLU_GELU.py": {
+      "mean": 0.0864,
+      "std": 0.00925,
+      "min": 0.0807,
+      "max": 0.175,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "55_Matmul_MaxPool_Sum_Scale.py": {
+      "mean": 0.0666,
+      "std": 0.0138,
+      "min": 0.0562,
+      "max": 0.192,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "56_Matmul_Sigmoid_Sum.py": {
+      "mean": 0.046,
+      "std": 0.0111,
+      "min": 0.0397,
+      "max": 0.145,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "57_Conv2d_ReLU_HardSwish.py": {
+      "mean": 0.101,
+      "std": 0.0119,
+      "min": 0.0928,
+      "max": 0.215,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "58_ConvTranspose3d_LogSumExp_HardSwish_Subtract_Clamp_Max.py": {
+      "mean": 11.5,
+      "std": 0.882,
+      "min": 11.0,
+      "max": 20.2,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "59_Matmul_Swish_Scaling.py": {
+      "mean": 0.0511,
+      "std": 0.0113,
+      "min": 0.0453,
+      "max": 0.147,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "60_ConvTranspose3d_Swish_GroupNorm_HardSwish.py": {
+      "mean": 10.1,
+      "std": 1.62,
+      "min": 9.7,
+      "max": 26.2,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "61_ConvTranspose3d_ReLU_GroupNorm.py": {
+      "mean": 0.887,
+      "std": 0.00895,
+      "min": 0.873,
+      "max": 0.95,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "62_Matmul_GroupNorm_LeakyReLU_Sum.py": {
+      "mean": 0.0704,
+      "std": 0.0144,
+      "min": 0.0625,
+      "max": 0.198,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "63_Gemm_ReLU_Divide.py": {
+      "mean": 0.0451,
+      "std": 0.0113,
+      "min": 0.0394,
+      "max": 0.143,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "64_Gemm_LogSumExp_LeakyReLU_LeakyReLU_GELU_GELU.py": {
+      "mean": 0.119,
+      "std": 0.0154,
+      "min": 0.107,
+      "max": 0.25,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "65_Conv2d_AvgPool_Sigmoid_Sum.py": {
+      "mean": 0.0807,
+      "std": 0.0137,
+      "min": 0.0759,
+      "max": 0.212,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "66_Matmul_Dropout_Mean_Softmax.py": {
+      "mean": 0.0658,
+      "std": 0.0134,
+      "min": 0.0573,
+      "max": 0.183,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "67_Conv2d_GELU_GlobalAvgPool.py": {
+      "mean": 0.0788,
+      "std": 0.0134,
+      "min": 0.0475,
+      "max": 0.182,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "68_Matmul_Min_Subtract.py": {
+      "mean": 0.094,
+      "std": 0.0323,
+      "min": 0.0407,
+      "max": 0.188,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "69_Conv2d_HardSwish_ReLU.py": {
+      "mean": 0.076,
+      "std": 0.009,
+      "min": 0.068,
+      "max": 0.162,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "70_Gemm_Sigmoid_Scaling_ResidualAdd.py": {
+      "mean": 0.0501,
+      "std": 0.0111,
+      "min": 0.0424,
+      "max": 0.152,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "71_Conv2d_Divide_LeakyReLU.py": {
+      "mean": 0.0752,
+      "std": 0.00989,
+      "min": 0.0697,
+      "max": 0.17,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "72_ConvTranspose3d_BatchNorm_AvgPool_AvgPool.py": {
+      "mean": 26.6,
+      "std": 0.0757,
+      "min": 26.5,
+      "max": 26.8,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "73_Conv2d_BatchNorm_Scaling.py": {
+      "mean": 0.129,
+      "std": 0.0111,
+      "min": 0.123,
+      "max": 0.232,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "74_ConvTranspose3d_LeakyReLU_Multiply_LeakyReLU_Max.py": {
+      "mean": 2.15,
+      "std": 0.0385,
+      "min": 2.08,
+      "max": 2.31,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "75_Gemm_GroupNorm_Min_BiasAdd.py": {
+      "mean": 0.0732,
+      "std": 0.014,
+      "min": 0.0653,
+      "max": 0.2,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "76_Gemm_Add_ReLU.py": {
+      "mean": 0.0451,
+      "std": 0.0131,
+      "min": 0.0395,
+      "max": 0.169,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "77_ConvTranspose3d_Scale_BatchNorm_GlobalAvgPool.py": {
+      "mean": 1.36,
+      "std": 0.0144,
+      "min": 1.34,
+      "max": 1.44,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "78_ConvTranspose3d_Max_Max_Sum.py": {
+      "mean": 1.05,
+      "std": 0.0206,
+      "min": 1.04,
+      "max": 1.12,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "79_Conv3d_Multiply_InstanceNorm_Clamp_Multiply_Max.py": {
+      "mean": 1.05,
+      "std": 0.0215,
+      "min": 0.997,
+      "max": 1.14,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "80_Gemm_Max_Subtract_GELU.py": {
+      "mean": 0.0683,
+      "std": 0.0238,
+      "min": 0.0561,
+      "max": 0.262,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "81_Gemm_Swish_Divide_Clamp_Tanh_Clamp.py": {
+      "mean": 0.0746,
+      "std": 0.0127,
+      "min": 0.0684,
+      "max": 0.188,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "82_Conv2d_Tanh_Scaling_BiasAdd_Max.py": {
+      "mean": 0.0968,
+      "std": 0.011,
+      "min": 0.0926,
+      "max": 0.203,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "83_Conv3d_GroupNorm_Min_Clamp_Dropout.py": {
+      "mean": 0.895,
+      "std": 0.0194,
+      "min": 0.855,
+      "max": 0.958,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "84_Gemm_BatchNorm_Scaling_Softmax.py": {
+      "mean": 0.0837,
+      "std": 0.0155,
+      "min": 0.0712,
+      "max": 0.225,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "85_Conv2d_GroupNorm_Scale_MaxPool_Clamp.py": {
+      "mean": 0.114,
+      "std": 0.0136,
+      "min": 0.105,
+      "max": 0.239,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "86_Matmul_Divide_GELU.py": {
+      "mean": 0.0444,
+      "std": 0.0112,
+      "min": 0.0354,
+      "max": 0.144,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "87_Conv2d_Subtract_Subtract_Mish.py": {
+      "mean": 0.0901,
+      "std": 0.00866,
+      "min": 0.0861,
+      "max": 0.173,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "88_Gemm_GroupNorm_Swish_Multiply_Swish.py": {
+      "mean": 0.0878,
+      "std": 0.014,
+      "min": 0.0741,
+      "max": 0.209,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "89_ConvTranspose3d_MaxPool_Softmax_Subtract_Swish_Max.py": {
+      "mean": 7.48,
+      "std": 1.11,
+      "min": 7.16,
+      "max": 18.5,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "90_Conv3d_LeakyReLU_Sum_Clamp_GELU.py": {
+      "mean": 0.888,
+      "std": 0.0221,
+      "min": 0.847,
+      "max": 0.98,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "91_ConvTranspose2d_Softmax_BiasAdd_Scaling_Sigmoid.py": {
+      "mean": 0.258,
+      "std": 0.0069,
+      "min": 0.25,
+      "max": 0.32,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "92_Conv2d_GroupNorm_Tanh_HardSwish_ResidualAdd_LogSumExp.py": {
+      "mean": 0.17,
+      "std": 0.0166,
+      "min": 0.161,
+      "max": 0.321,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "93_ConvTranspose2d_Add_Min_GELU_Multiply.py": {
+      "mean": 0.193,
+      "std": 0.00731,
+      "min": 0.187,
+      "max": 0.257,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "94_Gemm_BiasAdd_Hardtanh_Mish_GroupNorm.py": {
+      "mean": 0.111,
+      "std": 0.0588,
+      "min": 0.0767,
+      "max": 0.277,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "95_Matmul_Add_Swish_Tanh_GELU_Hardtanh.py": {
+      "mean": 0.0767,
+      "std": 0.014,
+      "min": 0.0678,
+      "max": 0.207,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "96_ConvTranspose3d_Multiply_Max_GlobalAvgPool_Clamp.py": {
+      "mean": 7.9,
+      "std": 1.53,
+      "min": 7.49,
+      "max": 23.1,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "97_Matmul_BatchNorm_BiasAdd_Divide_Swish.py": {
+      "mean": 0.0986,
+      "std": 0.0149,
+      "min": 0.0884,
+      "max": 0.232,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "98_Matmul_AvgPool_GELU_Scale_Max.py": {
+      "mean": 0.0702,
+      "std": 0.0138,
+      "min": 0.0636,
+      "max": 0.192,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "99_Matmul_GELU_Softmax.py": {
+      "mean": 0.0434,
+      "std": 0.0097,
+      "min": 0.0368,
+      "max": 0.132,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    },
+    "100_ConvTranspose3d_Clamp_Min_Divide.py": {
+      "mean": 1.01,
+      "std": 0.0162,
+      "min": 0.978,
+      "max": 1.07,
+      "num_trials": 100,
+      "hardware": "AMD GPU",
+      "gpu_type": "AMD",
+      "device": "cuda:0"
+    }
+  }
+}
