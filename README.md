@@ -573,7 +573,7 @@ We extend our deepest gratitude to the individuals whose dedication and expertis
 - **Xiang Long** - For his crucial collaboration in bridging SLIME with KernelBench evaluation through an innovative server-based architecture, enabling seamless integration between training and evaluation pipelines.
 
 #### 🔄 Multi-Turn Innovation
-- **Kexun Zhang** - For pioneering work on implementing multi-turn refinement methods and generously providing Claude API access for our SFT data generation pipeline, significantly enhancing our training data quality.
+- **Kexun Zhang** - For pioneering work on implementing multi-turn refinement methods and insightfully providing advice for our SFT data generation pipeline, significantly enhancing our training data quality.
 
 #### 💡 Research Insights
 - **Junrong Lin** and **Haoran Wang** - For their valuable insights and contributions to the system design and optimization strategies that shaped TritonForge's architecture.
