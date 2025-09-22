@@ -173,7 +173,7 @@ huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir models/Q
 #### 1. Launch Docker Container
 
 ```bash
-docker pull rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch_apex_vim
+docker pull rlsys/tritonforge:stable
 
 docker run -it \
   --device /dev/dri \
@@ -192,8 +192,8 @@ docker run -it \
   -e XDG_CACHE_HOME="$HOME/.cache" \
   -w "$PWD" \
   -p 127.0.0.1:18265:8265 \
-  --name slime_dev \
-  rlsys/april:slime_ubuntu22.04_rocm6.3.4-patch-numa_vllm0.8.5-patch_sglang0.4.7_megatron-core-patch_ray0.47-patch_apex_vim \
+  --name tritonforge_dev \
+  rlsys/tritonforge:stable \
   /bin/bash
 ```
 
@@ -529,6 +529,20 @@ We have conducted extensive experiments across different hardware platforms and 
 | **Level 2** | 100 | | | |
 
 </div> -->
+
+## ⚠️ Known Issues
+
+### AMD MI300X Multi-Turn Training Crash
+
+**Issue**: Multi-turn RL training on AMD MI300X GPUs experiences node crashes within 2 steps with CPU hitting 100% utilization.
+
+**Status**: 🔍 Under active investigation
+
+**Workaround**:
+- Use single-turn training (stable)
+- See [Issue #1](https://github.com/RLsys-Foundation/TritonForge/issues/1) for details and updates
+
+**Reproduction**: `bash SLIME/scripts/run_agent_kbench_qwen3_8B_sft_amd_multiturn_robust.sh`
 
 ## 🤝 Contributing
 
