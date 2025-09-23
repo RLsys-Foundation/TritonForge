@@ -29,7 +29,7 @@ graph TB
 
             subgraph ActorG["Actor Group (Training)"]
                 MegatronServer["Megatron-LM Server<br/>Distributed Training<br/>TP=2, CP=4, PP=1"]
-                PPO["PPO Actor<br/>Policy Updates"]
+                GRPO["GRPO Actor<br/>Group Relative Policy Optimization"]
                 WeightSync[Weight Synchronizer]
             end
 
@@ -96,7 +96,7 @@ graph TB
 
     NVBackend --> RewardAgg
     AMDBackend --> RewardAgg
-    RewardAgg --> PPO
+    RewardAgg --> GRPO
 
     style Router fill:#f9f,stroke:#333,stroke-width:4px
     style SFTModel fill:#9f9,stroke:#333,stroke-width:2px
@@ -162,7 +162,7 @@ flowchart TB
         subgraph TIter["Training Iteration"]
             GenExp["Generate Experience<br/>Async Rollout"]
             CollectData[Collect to Buffer]
-            TrainStep[PPO Training Step]
+            TrainStep[GRPO Training Step]
             UpdateWeights[Update Weights]
 
             GenExp --> CollectData
@@ -304,10 +304,16 @@ Special Handling:
   - Error recovery mechanisms
 
 ### Reward System
+- **GRPO (Group Relative Policy Optimization)**:
+  - Uses group-relative returns instead of traditional advantage estimation
+  - Better suited for multi-turn refinement scenarios
+  - Reduces variance in policy gradient estimation
+
 - **Multi-Turn Aggregation**:
   ```python
   total_return = sum(reward_t * (gamma ** t) for t, reward_t in enumerate(rewards))
   ```
+
 - **Reward Components**:
   - Compilation: 0.3 base reward
   - Correctness: 0.5 if functionally correct
@@ -318,7 +324,7 @@ Special Handling:
 1. **Input**: PyTorch operations from KernelBook/KernelBench
 2. **SFT Pipeline**: Multi-turn augmentation → Thinking tags → Filtering → 17k samples
 3. **SFT Training**: Distributed training via Megatron-LM → Fine-tuned model
-4. **RL Pipeline**: Multi-turn generation → Evaluation → Reward → PPO updates
+4. **RL Pipeline**: Multi-turn generation → Evaluation → Reward → GRPO updates
 5. **Output**: Optimized TritonForge model capable of generating efficient GPU kernels
 
 ## 🚦 System Status Indicators
@@ -339,7 +345,7 @@ graph LR
     Improve --> Generate
 
     Evaluate --> Reward[Calculate Reward]
-    Reward --> Train[PPO Training]
+    Reward --> Train[GRPO Training]
     Train --> Model[Update Model]
     Model --> Generate
 ```
