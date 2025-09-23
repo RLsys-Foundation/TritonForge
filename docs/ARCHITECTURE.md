@@ -6,39 +6,40 @@ TritonForge is a **server-based SFT + RL post-training framework** that operates
 
 ```mermaid
 graph TB
-    subgraph "Data Layer"
-        KB[KernelBook Dataset<br/>18.2k PyTorch-to-Triton pairs]
-        KBench[KernelBench Dataset<br/>200+ problems L1-L4]
+    subgraph DL["Data Layer"]
+        KB["KernelBook Dataset<br/>18.2k PyTorch-to-Triton pairs"]
+        KBench["KernelBench Dataset<br/>200+ problems L1-L4"]
 
-        subgraph "SFT Data Pipeline"
+        subgraph Pipeline["SFT Data Pipeline"]
             DP1[Multi-Turn Data Generator]
             DP2[Thinking Tags Injector]
-            DP3[Length & Quality Filter]
-            DP1 --> DP2 --> DP3
+            DP3["Length & Quality Filter"]
+            DP1 --> DP2
+            DP2 --> DP3
         end
 
         KB --> DP1
         KBench --> DP1
-        DP3 --> ProcessedData[Processed Training Data<br/>~17k filtered samples]
+        DP3 --> ProcessedData["Processed Training Data<br/>~17k filtered samples"]
     end
 
-    subgraph "Training Infrastructure"
-        subgraph "SLIME Framework (Server-Based)"
-            Router[SLIME Router<br/>Orchestration Layer]
+    subgraph TI["Training Infrastructure"]
+        subgraph SLIME["SLIME Framework (Server-Based)"]
+            Router["SLIME Router<br/>Orchestration Layer"]
 
-            subgraph "Actor Group (Training)"
-                MegatronServer[Megatron-LM Server<br/>Distributed Training<br/>TP=2, CP=4, PP=1]
-                PPO[PPO Actor<br/>Policy Updates]
+            subgraph ActorG["Actor Group (Training)"]
+                MegatronServer["Megatron-LM Server<br/>Distributed Training<br/>TP=2, CP=4, PP=1"]
+                PPO["PPO Actor<br/>Policy Updates"]
                 WeightSync[Weight Synchronizer]
             end
 
-            subgraph "Rollout Group (Generation)"
-                SGLangServer[SGLang Server Pool<br/>High-Performance Inference]
-                RolloutBuffer[Async Rollout Buffer<br/>Experience Collection]
+            subgraph RolloutG["Rollout Group (Generation)"]
+                SGLangServer["SGLang Server Pool<br/>High-Performance Inference"]
+                RolloutBuffer["Async Rollout Buffer<br/>Experience Collection"]
 
-                subgraph "Generators"
+                subgraph Gens[Generators]
                     SingleTurnGen[Single-Turn Generator]
-                    MultiTurnGen[Multi-Turn Generator<br/>Max 3 iterations]
+                    MultiTurnGen["Multi-Turn Generator<br/>Max 3 iterations"]
                 end
             end
 
@@ -49,16 +50,16 @@ graph TB
         end
     end
 
-    subgraph "Evaluation Infrastructure"
-        subgraph "Disaggregated Eval Servers"
-            EvalServer1[KernelBench Eval Server<br/>Port 18188]
-            EvalServer2[Remote Eval Server<br/>Compilation & Correctness]
-            EvalServer3[Performance Eval Server<br/>Speedup Metrics]
+    subgraph EI["Evaluation Infrastructure"]
+        subgraph EvalServers["Disaggregated Eval Servers"]
+            EvalServer1["KernelBench Eval Server<br/>Port 18188"]
+            EvalServer2["Remote Eval Server<br/>Compilation & Correctness"]
+            EvalServer3["Performance Eval Server<br/>Speedup Metrics"]
         end
 
-        subgraph "Platform-Specific Backends"
-            NVBackend[NVIDIA Backend<br/>CUDA 12.6+<br/>Triton Compiler]
-            AMDBackend[AMD Backend<br/>ROCm 6.3+<br/>HIP Translation Layer]
+        subgraph Backends["Platform-Specific Backends"]
+            NVBackend["NVIDIA Backend<br/>CUDA 12.6+<br/>Triton Compiler"]
+            AMDBackend["AMD Backend<br/>ROCm 6.3+<br/>HIP Translation Layer"]
         end
 
         MultiTurnGen -->|Eval Request| EvalServer1
@@ -69,10 +70,10 @@ graph TB
         EvalServer3 --> AMDBackend
     end
 
-    subgraph "Model Evolution"
-        BaseModel[Qwen3-8B<br/>Base Model]
-        SFTModel[Qwen3-8B-Kernelbook-SFT<br/>Fine-tuned Model]
-        RLModel[TritonForge-8B<br/>RL-Optimized Model]
+    subgraph ME["Model Evolution"]
+        BaseModel["Qwen3-8B<br/>Base Model"]
+        SFTModel["Qwen3-8B-Kernelbook-SFT<br/>Fine-tuned Model"]
+        RLModel["TritonForge-8B<br/>RL-Optimized Model"]
 
         BaseModel -->|SFT Training| SFTModel
         SFTModel -->|RL Training| RLModel
@@ -81,11 +82,11 @@ graph TB
     ProcessedData --> MegatronServer
     MegatronServer --> SFTModel
 
-    subgraph "Reward System"
-        CompileReward[Compilation Success<br/>+0.3 base]
-        CorrectReward[Functional Correctness<br/>+0.5 if correct]
-        SpeedupReward[Performance Speedup<br/>+0.2 × log(speedup)]
-        DiscountFactor[γ = 0.4<br/>Multi-turn discount]
+    subgraph RS["Reward System"]
+        CompileReward["Compilation Success<br/>+0.3 base"]
+        CorrectReward["Functional Correctness<br/>+0.5 if correct"]
+        SpeedupReward["Performance Speedup<br/>+0.2 × log(speedup)"]
+        DiscountFactor["γ = 0.4<br/>Multi-turn discount"]
 
         CompileReward --> RewardAgg[Reward Aggregator]
         CorrectReward --> RewardAgg
@@ -108,14 +109,14 @@ graph TB
 
 ```mermaid
 flowchart LR
-    subgraph "Raw Data Sources"
-        KB[KernelBook<br/>18.2k samples]
-        KBench[KernelBench<br/>L1-L4 problems]
+    subgraph RDS["Raw Data Sources"]
+        KB["KernelBook<br/>18.2k samples"]
+        KBench["KernelBench<br/>L1-L4 problems"]
     end
 
-    subgraph "Data Augmentation"
+    subgraph DA["Data Augmentation"]
         MT[Multi-Turn Converter]
-        TT[Thinking Tags<br/>⟨thinking⟩...⟨/thinking⟩]
+        TT["Thinking Tags<br/>⟨thinking⟩...⟨/thinking⟩"]
         Conv[Conversation Format]
 
         KB --> MT
@@ -124,9 +125,9 @@ flowchart LR
         TT --> Conv
     end
 
-    subgraph "Quality Control"
-        LenFilter[Length Filter<br/>Min: 100 tokens<br/>Max: 8192 tokens]
-        QualFilter[Quality Filter<br/>Remove invalid code]
+    subgraph QC["Quality Control"]
+        LenFilter["Length Filter<br/>Min: 100 tokens<br/>Max: 8192 tokens"]
+        QualFilter["Quality Filter<br/>Remove invalid code"]
         Dedup[Deduplication]
 
         Conv --> LenFilter
@@ -134,9 +135,9 @@ flowchart LR
         QualFilter --> Dedup
     end
 
-    subgraph "Output Formats"
-        JSONL[JSONL Format<br/>kernel_bench_triton_all_levels.jsonl]
-        Megatron[Megatron Format<br/>For distributed training]
+    subgraph OF["Output Formats"]
+        JSONL["JSONL Format<br/>kernel_bench_triton_all_levels.jsonl"]
+        Megatron["Megatron Format<br/>For distributed training"]
 
         Dedup --> JSONL
         Dedup --> Megatron
@@ -150,16 +151,16 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    subgraph "Async Training Loop"
+    subgraph ATL["Async Training Loop"]
         Init[Initialize Ray Cluster]
-        CreatePG[Create Placement Groups<br/>Actor GPUs | Rollout GPUs]
-        StartServers[Start All Servers<br/>Megatron | SGLang | Eval]
+        CreatePG["Create Placement Groups<br/>Actor GPUs | Rollout GPUs"]
+        StartServers["Start All Servers<br/>Megatron | SGLang | Eval"]
 
         Init --> CreatePG
         CreatePG --> StartServers
 
-        subgraph "Training Iteration"
-            GenExp[Generate Experience<br/>Async Rollout]
+        subgraph TIter["Training Iteration"]
+            GenExp["Generate Experience<br/>Async Rollout"]
             CollectData[Collect to Buffer]
             TrainStep[PPO Training Step]
             UpdateWeights[Update Weights]
@@ -173,10 +174,10 @@ flowchart TB
         StartServers --> GenExp
     end
 
-    subgraph "Server Communication"
-        HTTP[HTTP/REST APIs<br/>Between servers]
-        Ray[Ray Remote Calls<br/>Actor coordination]
-        Queue[Message Queues<br/>Async buffering]
+    subgraph SC["Server Communication"]
+        HTTP["HTTP/REST APIs<br/>Between servers"]
+        Ray["Ray Remote Calls<br/>Actor coordination"]
+        Queue["Message Queues<br/>Async buffering"]
 
         HTTP -.-> GenExp
         Ray -.-> CollectData
