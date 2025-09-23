@@ -14,7 +14,7 @@
 
 **Transform PyTorch Operations into Optimized GPU Kernels with LLMs**
 
-[📚 Documentation](docs/) | [🚀 Quick Start](#-quick-start) | [📊 Results](#-results) | [🤝 Contributing](#-contributing)
+[📚 Documentation](docs/) | [🏗️ Architecture](docs/ARCHITECTURE.md) | [🚀 Quick Start](#-quick-start) | [📊 Results](#-results) | [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -37,6 +37,8 @@
 ## 🎯 Overview
 
 **TritonForge** is an advanced machine learning framework that trains Large Language Models (LLMs) to automatically convert PyTorch operations into optimized Triton GPU kernels. By combining supervised fine-tuning (SFT) with reinforcement learning (RL), TritonForge achieves state-of-the-art performance in automated kernel generation.
+
+> 🏗️ **Architecture Deep Dive**: For a comprehensive understanding of our server-based SFT + RL framework, evaluation infrastructure, and cross-platform support, see our [Architecture Documentation](docs/ARCHITECTURE.md).
 
 ### 🌍 Fully Open-Source Initiative
 
@@ -271,18 +273,32 @@ huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir /root/Qw
 <div align="center">
 
 ```mermaid
-graph LR
-    A["Base Model<br/>Qwen3-8B"] --> B["Stage 1: SFT<br/>GPUMODE/KernelBook + Our data pipeline"]
-    B --> C["Fine-tuned Model<br/>Qwen3-8B-Kernelbook-SFT"]
-    C --> D["Stage 2: RL<br/>KernelBench L1-L2"]
-    D --> E["Optimized Model<br/>TritonForge"]
-    
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style C fill:#9f9,stroke:#333,stroke-width:2px
-    style E fill:#99f,stroke:#333,stroke-width:2px
+graph TB
+    subgraph "📊 Data Pipeline"
+        KB[KernelBook 18.2k] --> Aug[Multi-turn + Thinking Tags]
+        Aug --> Filter[Quality Filter]
+        Filter --> Data[17k Training Samples]
+    end
+
+    subgraph "🔄 Server-Based Training"
+        Data --> SFT[SFT Training<br/>via SLIME]
+        SFT --> Model1[Qwen3-8B-SFT]
+        Model1 --> RL[RL Training<br/>Multi-turn Refinement]
+        RL --> Model2[TritonForge-8B]
+    end
+
+    subgraph "🖥️ Cross-Platform Evaluation"
+        Model2 --> NV[NVIDIA H100<br/>CUDA + Triton]
+        Model2 --> AMD[AMD MI300X<br/>ROCm + HIP]
+    end
+
+    style Model1 fill:#9f9,stroke:#333,stroke-width:2px
+    style Model2 fill:#99f,stroke:#333,stroke-width:4px
 ```
 
 </div>
+
+> 📖 **Detailed Architecture**: See our comprehensive [Architecture Documentation](docs/ARCHITECTURE.md) for the complete server-based SFT + RL framework design.
 
 ### Stage 1: Supervised Fine-Tuning (SFT)
 
