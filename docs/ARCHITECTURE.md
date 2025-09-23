@@ -83,9 +83,9 @@ graph TB
     MegatronServer --> SFTModel
 
     subgraph RS["Reward System"]
-        CompileReward["Compilation Success<br/>+0.3 base"]
-        CorrectReward["Functional Correctness<br/>+0.5 if correct"]
-        SpeedupReward["Performance Speedup<br/>+0.2 × log(speedup)"]
+        CompileReward["Compilation Success<br/>+0.1 base"]
+        CorrectReward["Functional Correctness<br/>+0.3 if correct"]
+        SpeedupReward["Performance Speedup<br/>+(speedup-1), max 2.0"]
         DiscountFactor["γ = 0.4<br/>Multi-turn discount"]
 
         CompileReward --> RewardAgg[Reward Aggregator]
@@ -315,9 +315,11 @@ Special Handling:
   ```
 
 - **Reward Components**:
-  - Compilation: 0.3 base reward
-  - Correctness: 0.5 if functionally correct
-  - Speedup: 0.2 × log(speedup_ratio)
+  - Compilation: 0.1 base reward (if code compiles successfully)
+  - Correctness: 0.3 total reward (if functionally correct, includes compilation)
+  - Performance: +(speedup - 1.0), capped at 2.0
+    - Example: 2x speedup → +1.0 reward, 3x speedup → +2.0 reward (max)
+    - Maximum total reward: 2.3 (0.3 correctness + 2.0 max performance)
 
 ## 📊 Data Flow Summary
 
