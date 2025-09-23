@@ -10,6 +10,7 @@
 [![Python](https://img.shields.io/badge/Python-3.12%2B-green.svg)](https://www.python.org/)
 [![CUDA](https://img.shields.io/badge/CUDA-12.6%2B-76B900.svg?logo=nvidia)](https://developer.nvidia.com/cuda-toolkit)
 [![ROCm](https://img.shields.io/badge/ROCm-6.3%2B-red.svg?logo=amd)](https://www.amd.com/en/products/software/rocm.html)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/RLsys-Foundation/TritonForge)
 
 **Transform PyTorch Operations into Optimized GPU Kernels with LLMs**
 
