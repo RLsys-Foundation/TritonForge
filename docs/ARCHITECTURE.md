@@ -111,16 +111,15 @@ graph TB
 flowchart LR
     subgraph RDS["Raw Data Sources"]
         KB["KernelBook<br/>18.2k samples"]
-        KBench["KernelBench<br/>L1-L4 problems"]
     end
 
     subgraph DA["Data Augmentation"]
         MT[Multi-Turn Converter]
-        TT["Thinking Tags<br/>⟨thinking⟩...⟨/thinking⟩"]
-        Conv[Conversation Format]
+        TT["Add Thinking Tags<br/>⟨thinking⟩...⟨/thinking⟩"]
+        Conv[Chat Template Format]
 
         KB --> MT
-        KBench --> MT
+        KBench["KBench Eval Backend"] --> MT
         MT --> TT
         TT --> Conv
     end
@@ -137,14 +136,11 @@ flowchart LR
 
     subgraph OF["Output Formats"]
         JSONL["JSONL Format<br/>kernel_bench_triton_all_levels.jsonl"]
-        Megatron["Megatron Format<br/>For distributed training"]
 
         Dedup --> JSONL
-        Dedup --> Megatron
     end
 
     JSONL --> FinalData[17k Filtered Samples]
-    Megatron --> FinalData
 ```
 
 ### Stage 2: Server-Based Training Architecture
