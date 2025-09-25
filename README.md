@@ -271,31 +271,7 @@ huggingface-cli download zyzshishui0627/Qwen3-8B_torch_dist --local-dir /root/Qw
 ## 🎓 Training Pipeline
 
 <div align="center">
-
-```mermaid
-graph TB
-    subgraph "📊 Data Pipeline"
-        KB[KernelBook 18.2k] --> Aug[Multi-turn + Thinking Tags]
-        Aug --> Filter[Quality Filter]
-        Filter --> Data[17k Training Samples]
-    end
-
-    subgraph "🔄 Server-Based Training"
-        Data --> SFT[SFT Training<br/>via SLIME]
-        SFT --> Model1[Qwen3-8B-SFT]
-        Model1 --> RL[RL Training<br/>Multi-turn Refinement]
-        RL --> Model2[TritonForge-8B]
-    end
-
-    subgraph "🖥️ Cross-Platform Evaluation"
-        Model2 --> NV[NVIDIA H100<br/>CUDA + Triton]
-        Model2 --> AMD[AMD MI300X<br/>ROCm + HIP]
-    end
-
-    style Model1 fill:#9f9,stroke:#333,stroke-width:2px
-    style Model2 fill:#99f,stroke:#333,stroke-width:4px
-```
-
+  <img src="SLIME/imgs/tf_training_pipeline.png" alt="TritonForge Training Pipeline" width="100%">
 </div>
 
 > 📖 **Detailed Architecture**: See our comprehensive [Architecture Documentation](docs/ARCHITECTURE.md) for the complete server-based SFT + RL framework design.
@@ -451,7 +427,6 @@ TritonForge/
 │   └── scripts/                   # Evaluation scripts
 ├── 📁 docs/                       # Documentation and assets
 │   └── assets/                    # Images and logos
-└── 📁 models/                     # Downloaded model checkpoints
 ```
 
 ## 📊 Results
