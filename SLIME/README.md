@@ -346,6 +346,124 @@ class CustomKernelGenerator(BaseGenerator):
 
 *[Results section to be added after experiments complete]*
 
+## 🚀 ROADMAP - Q4 2025 & Beyond
+
+*Current Date: September 27, 2025*
+
+TritonForge is evolving rapidly! Here's our priority-based roadmap starting from October 2025, organized from easiest to most complex implementations.
+
+### 📅 Monthly Milestones - Q4 2025
+
+#### 🟢 **October 2025** - Foundation & Quick Wins
+*Priority: High | Difficulty: Easy*
+
+- **AMD Multi-turn Stability Fix** 🔧
+  - Test with ROCm 6.5+ versions
+  - Implement crash recovery mechanisms
+  - Document workarounds for known issues
+
+- **Basic GUI Dashboard (v0.1)** 📊
+  - Simple web interface for training metrics
+  - Real-time loss curves and basic stats
+  - Checkpoint listing and management
+
+- **KernelBench Data Collection** 📈
+  - Start collecting more kernel examples
+  - Categorize by complexity levels
+  - Set up automated testing pipeline
+
+#### 🟡 **November 2025** - Scaling & Optimization
+*Priority: High | Difficulty: Medium*
+
+- **4+4+2 Architecture Implementation** 🏗️
+  - Expand from 4+2+2 to 4+4+2 for multi-turn
+  - Optimize resource allocation
+  - Test on single-node first
+  - Document configuration best practices
+
+- **GUI Dashboard v0.5** 🎨
+  - Add rollout trajectory visualization
+  - Implement reward distribution charts
+  - Basic task queue monitoring
+
+- **Initial MOE Model Testing** 🤖
+  - Start experiments with smaller MOE models
+  - Profile memory and compute requirements
+  - Baseline performance benchmarks
+
+#### 🔴 **December 2025** - Advanced Features
+*Priority: Medium | Difficulty: Medium-Hard*
+
+- **Qwen3-30B-A3B Integration** 🚀
+  - Full [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) support
+  - Optimize sparse activation patterns
+  - Performance tuning for MOE architecture
+
+- **Tool Calling Framework (Phase 1)** 🛠️
+  - PyTorch profiler integration
+  - Basic operation cost analysis
+  - Simple bottleneck detection
+
+- **GUI Dashboard v1.0** 💻
+  - Complete monitoring suite
+  - Multi-turn trajectory inspection
+  - Performance analytics dashboard
+  - Error tracking and debugging tools
+
+### 🎯 2026 Roadmap - Priority Order
+
+#### 🏆 **High Priority** (Q1 2026)
+*Essential for core functionality*
+
+1. **FSDP Backend Integration** - Once SLIME upstream supports it
+2. **KernelBench v0.1 Release** - Comprehensive benchmark suite
+3. **Tool Calling Phase 2** - Documentation access & search capabilities
+4. **Multi-node Support** - Distributed training across nodes
+
+#### ⭐ **Medium Priority** (Q2 2026)
+*Enhanced capabilities*
+
+5. **Multi-DSL Support** - Start with CUDA, then HIP/ROCm
+6. **Advanced Tool Calling** - Terminal execution, A/B testing
+7. **70B+ Model Support** - Scale beyond 30B parameters
+8. **Production Features** - Enterprise authentication, versioning
+
+#### 💫 **Future Enhancements** (H2 2026)
+*Nice-to-have features*
+
+9. **Cross-DSL Translation** - Convert between kernel languages
+10. **Academic Integration** - Paper search and citation
+11. **Community Platform** - Kernel sharing and collaboration
+12. **SaaS Deployment** - Cloud-hosted solution
+
+### 🔧 Implementation Priority Matrix
+
+| Feature | Effort | Impact | Priority | Target |
+|---------|--------|--------|----------|--------|
+| AMD Stability Fix | Low | High | 🔴 Critical | Oct 2025 |
+| Basic GUI | Low | Medium | 🟠 High | Oct 2025 |
+| 4+4+2 Architecture | Medium | High | 🟠 High | Nov 2025 |
+| MOE Models (30B) | Medium | High | 🟠 High | Dec 2025 |
+| Tool Calling (Basic) | Medium | Medium | 🟡 Medium | Dec 2025 |
+| FSDP Support | High | High | 🟡 Medium | Q1 2026 |
+| Multi-DSL | High | Medium | 🟢 Low | Q2 2026 |
+| 70B+ Models | High | Low | 🟢 Low | Q2 2026 |
+
+### 🚦 Quick Wins for October 2025
+
+1. **Week 1-2**: AMD stability patches and testing
+2. **Week 2-3**: Basic GUI implementation (FastAPI + React)
+3. **Week 3-4**: KernelBench data pipeline setup
+4. **Week 4**: Documentation and testing
+
+### 🎯 Success Metrics
+
+- **Performance**: 2-3x speedup over hand-written kernels
+- **Reliability**: 99%+ compilation success rate
+- **Coverage**: Support for 95%+ of common DL operations
+- **Scale**: Efficient training on 100B+ parameter models
+- **Adoption**: Integration with major ML frameworks
+
 ## 🤝 Contributing
 
 We welcome contributions! Areas of particular interest:

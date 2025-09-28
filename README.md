@@ -14,7 +14,7 @@
 
 **Transform PyTorch Operations into Optimized GPU Kernels with LLMs**
 
-[📚 Documentation](docs/) | [🏗️ Architecture](docs/ARCHITECTURE.md) | [🚀 Quick Start](#-quick-start) | [📊 Results](#-results) | [🤝 Contributing](#-contributing)
+[📚 Documentation](docs/) | [🏗️ Architecture](docs/ARCHITECTURE.md) | [🚀 Quick Start](#-quick-start) | [📊 Results](#-results) | [🗺️ Roadmap](#-roadmap) | [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -525,6 +525,42 @@ We have conducted extensive experiments across different hardware platforms and 
 | **Level 2** | 100 | | | |
 
 </div> -->
+
+## 🗺️ Roadmap
+
+### Q4 2025 & Beyond
+
+We have an ambitious roadmap to transform TritonForge into a comprehensive, intelligent kernel development platform. Our immediate focus for the remaining months of 2025:
+
+<div align="center">
+
+| Month | Focus | Key Deliverables | Status |
+|-------|-------|------------------|--------|
+| **Oct 2025** | Foundation & Quick Wins | AMD stability fixes, Basic GUI v0.1, KernelBench setup | 🚀 Starting |
+| **Nov 2025** | Scaling & Optimization | 4+4+2 architecture, GUI v0.5, MOE testing | 📋 Planned |
+| **Dec 2025** | Advanced Features | Qwen3-30B-A3B, Tool calling v1, GUI v1.0 | 📋 Planned |
+
+</div>
+
+### 🎯 Key Initiatives
+
+- **🏗️ Infrastructure**: Scale from 4+2+2 to 4+4+2 architecture for enhanced multi-turn training
+- **🤖 Model Support**: Enable MOE models like [Qwen3-30B-A3B](https://huggingface.co/Qwen/Qwen3-30B-A3B) for superior performance
+- **🛠️ Intelligent Agent**: Tool calling for profiling, documentation access, and search
+- **🌍 Multi-DSL**: Support CUDA, HIP/ROCm, OpenCL beyond just Triton
+- **📊 Production GUI**: Real-time monitoring and visualization dashboard
+
+### 📖 Full Roadmap Details
+
+For the complete roadmap with detailed milestones, task breakdowns, and progress tracking:
+
+<div align="center">
+
+[<img src="https://img.shields.io/badge/View_Full_Roadmap-Issue_%232-181717?style=for-the-badge&logo=github&logoColor=white" height="40">](https://github.com/RLsys-Foundation/TritonForge/issues/2)
+
+</div>
+
+We welcome community feedback and contributions to help shape TritonForge's future!
 
 ## ⚠️ Known Issues
 
