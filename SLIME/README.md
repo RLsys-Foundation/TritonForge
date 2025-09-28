@@ -133,8 +133,9 @@ After SFT, we apply reinforcement learning for further improvement:
 Basic PyTorch to Triton conversion without iterative refinement:
 
 ```bash
-# NVIDIA GPUs
-bash scripts/run_agent_kbench_qwen3_8B_sft.sh
+# NVIDIA GPUs (run from /root/TritonForge)
+cd /root/TritonForge
+bash SLIME/scripts/run_agent_kbench_qwen3_8B_sft_nv_single_turn.sh
 
 # AMD GPUs
 bash scripts/run_agent_kbench_qwen3_8B_sft_amd_singleturn.sh
@@ -145,8 +146,9 @@ bash scripts/run_agent_kbench_qwen3_8B_sft_amd_singleturn.sh
 Iterative kernel improvement through compilation feedback:
 
 ```bash
-# NVIDIA GPUs
-bash scripts/run_agent_kbench_qwen3_8B_sft_fixed.sh
+# NVIDIA GPUs (run from /root/TritonForge)
+cd /root/TritonForge
+bash SLIME/scripts/run_agent_kbench_qwen3_8B_sft_nv_multi_turn.sh
 
 # AMD GPUs
 bash scripts/run_agent_kbench_qwen3_8B_sft_amd.sh
@@ -157,6 +159,15 @@ The multi-turn scripts automatically:
 2. Start rollout buffer server for trajectory management
 3. Initialize kernel evaluation server
 4. Enable iterative improvement with discount factor γ=0.4
+
+**Note**: If you've cloned TritonForge to a different location, update the `PROJECT_ROOT` variable at the top of each script:
+```bash
+# In SLIME/scripts/run_agent_kbench_*.sh
+PROJECT_ROOT="/your/path/to/TritonForge"
+
+# In SLIME/scripts/agent-example-kbench-*.sh
+PROJECT_ROOT=/your/path
+```
 
 ## ⚙️ Configuration
 
