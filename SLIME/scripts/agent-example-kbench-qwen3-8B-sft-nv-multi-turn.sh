@@ -26,11 +26,11 @@ export PP_SIZE=1    # Pipeline parallelism
 export CP_SIZE=2    # Context parallelism (total_model_size = 2*1*2 = 4, matches 4 GPUs)
 
 # Model paths - Using SFT model
-PROJECT_ROOT=/workspace
-export HF_MODEL_PATH=/workspace/models/Qwen3-8B
-export MCORE_MODEL_PATH=/workspace/models/Qwen3-8B-Kernelbook-SFT-filtered
-export PROMPT_DATA=/workspace/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl
-export MCORE_MODEL_PATH_SAVE=/worksapce/models/Qwen3-8B-Kernelbook-SFT-filtered_save
+PROJECT_ROOT=/root
+export HF_MODEL_PATH="${PROJECT_ROOT}/models/Qwen3-8B"
+export MCORE_MODEL_PATH="${PROJECT_ROOT}/models/Qwen3-8B-Kernelbook-SFT-filtered"
+export PROMPT_DATA="${PROJECT_ROOT}/TritonForge/SLIME/data/kernel_bench/kernel_bench_triton_level_1_2.jsonl"
+export MCORE_MODEL_PATH_SAVE="${PROJECT_ROOT}/models/Qwen3-8B-Kernelbook-SFT-filtered_save"
 
 # Qwen3-8B model architecture parameters
 MODEL_ARGS=(
@@ -83,7 +83,7 @@ ROLLOUT_ARGS=(
    --num-rollout 1000
    --rollout-batch-size 4  # Further reduced for stability
    --rollout-max-response-len 8192
-   --rollout-temperature 0.9
+   --rollout-temperature 1.0
    --rollout-shuffle
    --n-samples-per-prompt 8
    --global-batch-size 32  # Reduced to match smaller rollout batch
@@ -91,14 +91,6 @@ ROLLOUT_ARGS=(
    --max-turns 3
    --gamma 0.4
 )
-
-# EVAL_ARGS=(
-#    --eval-interval 20
-#    --eval-prompt-data kernelbench ${PROMPT_DATA}
-#    --n-samples-per-eval-prompt 16
-#    --eval-max-response-len 16384
-#    --eval-top-p 0.95
-# )
 
 PERF_ARGS=(
    --tensor-model-parallel-size ${TP_SIZE}
@@ -143,8 +135,8 @@ OPTIMIZER_ARGS=(
 
 WANDB_ARGS=(
    --use-wandb
-   --wandb-project TF-NV-multiturn-qwen3-8B-sft-filtered
-   --wandb-group TF-Qwen3-8B-SFT-KBench-MultiTurn-Filtered
+   --wandb-project TF-NV-multiturn-qwen3-8B-sft
+   --wandb-group TF-Qwen3-8B-SFT-KBench-MultiTurn
    --wandb-key ${WANDB_KEY}
 )
 
@@ -170,7 +162,7 @@ ray job submit --address="http://127.0.0.1:8265" \
         "NCCL_CUMEM_ENABLE": "0"
      }
    }' \
-   -- python3 train_async.py \
+   -- python3 SLIME/train_async.py \
    --num-epoch 1000 \
    --actor-num-nodes 1 \
    --actor-num-gpus-per-node 4 \
