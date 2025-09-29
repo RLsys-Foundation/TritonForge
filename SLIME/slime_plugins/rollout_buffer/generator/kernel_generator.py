@@ -36,7 +36,7 @@ SAMPLING_PARAMS = {
 
 # Path to baseline timing data
 BASELINE_TIMING_PATH = (
-    "/workspace/KernelBench/results/timing/H100_atlas/baseline_time_torch_compile_inductor_default.json"
+    "/root/TritonForge/KBenchEval/results/timing/H100_together/baseline_time_torch_compile_inductor_default.json"
 )
 
 logger = logging.getLogger(__name__)
