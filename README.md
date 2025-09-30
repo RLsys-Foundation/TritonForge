@@ -14,7 +14,7 @@
 
 **Transform PyTorch Operations into Optimized GPU Kernels with LLMs**
 
-[📚 Documentation](docs/) | [🏗️ Architecture](docs/ARCHITECTURE.md) | [🚀 Quick Start](#-quick-start) | [📊 Results](#-results) | [🗺️ Roadmap](#-roadmap) | [🤝 Contributing](#-contributing)
+[📚 Documentation](docs/) | [🏗️ Architecture](docs/ARCHITECTURE.md) | [🚀 Quick Start](#-quick-start) | [📊 Results](#-results) | [🗺️ Roadmap](#%EF%B8%8F-roadmap) | [🤝 Contributing](#-contributing)
 
 </div>
 
@@ -33,6 +33,10 @@
 | 🧪 **200+ Benchmarks** | Extensive test suite across multiple difficulty levels |
 
 </div>
+
+## 📰 News
+
+- **[2025/09/29]** 🎉 We released both English and Chinese versions of the TritonForge Tech Blog! [English version](https://tar-gazelle-668.notion.site/TritonForge-Tech-Blog-27e651cb22e581129b43c94b141cf763) | [Chinese version (中文版)](https://tar-gazelle-668.notion.site/TritonForge-278651cb22e5804c8bd8d0b6ce583fbc)
 
 ## 🎯 Overview
 
