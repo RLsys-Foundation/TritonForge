@@ -36,6 +36,7 @@
 
 ## 📰 News
 
+- **[2025/10/09]** 🎉 We just gave a talk about TritonForge as a guest speaker for [Li Lab](https://leililab.github.io/) @ CMU! [Slide](https://gamma.app/docs/TritonForge-kv3gnxzsrrunfos) here if u feel interested~
 - **[2025/09/29]** 🎉 We released both English and Chinese versions of the TritonForge Tech Blog! [English version](https://tar-gazelle-668.notion.site/TritonForge-Tech-Blog-27e651cb22e581129b43c94b141cf763) | [Chinese version (中文版)](https://tar-gazelle-668.notion.site/TritonForge-278651cb22e5804c8bd8d0b6ce583fbc)
 
 ## 🎯 Overview
