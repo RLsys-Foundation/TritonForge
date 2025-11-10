@@ -101,6 +101,12 @@ python scripts/generate_and_eval_single_sample.py \
 - **Precision**: BF16 support enabled
 - **Backend**: CUDA 12.1 with PyTorch 2.8.0
 
+### Model Used
+The evaluation and code generation were performed using the fine-tuned model  
+**[JinnP/Qwen3-8B-Kernelbook-SFT-HF](https://huggingface.co/JinnP/Qwen3-8B-Kernelbook-SFT-HF)**  
+hosted on Hugging Face. This model is a specialized Qwen 3 8B variant trained on the KernelBook
+dataset for Triton kernel synthesis and optimization tasks.
+
 ### Environment Settings
 ```bash
 export CUDA_VISIBLE_DEVICES=1
